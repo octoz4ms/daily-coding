@@ -9,6 +9,7 @@
         <option value="$PROJECT_DIR$/custom-starter-spring-boot/pom.xml" />
         <option value="$PROJECT_DIR$/spring-security-demo/pom.xml" />
         <option value="$PROJECT_DIR$/multi-thread-demo/pom.xml" />
+        <option value="$PROJECT_DIR$/hello-world/pom.xml" />
       </list>
     </option>
   </component>

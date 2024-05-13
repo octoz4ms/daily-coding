@@ -9,7 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="spring-security-demo" />
         <module name="custom-starter-spring-boot" />
-        <module name="demo" />
+        <module name="hello-world" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -19,7 +19,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="custom-starter-spring-boot" options="-parameters" />
-      <module name="demo" options="-parameters" />
+      <module name="hello-world" options="-parameters" />
       <module name="spring-security-demo" options="-parameters" />
     </option>
   </component>
