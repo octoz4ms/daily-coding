@@ -1,17 +1,15 @@
+
 public class Solution {
-    /**
-     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
-     *
-     *
-     * @param head ListNode类
-     * @return ListNode类
-     */
-    public static ListNode ReverseList (ListNode head) {
-        // write code here
-        return new ListNode(0);
+    public boolean VerifySquenceOfBST(int [] sequence) {
+        return recur(sequence,0, sequence.length -1);
     }
 
-    public static void main(String[] args) {
-        ListNode head = ListNode.createListNode(new int[]{1, 2, 3});
-        ListNode.printListNode(head);    }
+    boolean  recur(int[] postorder, int i, int j) {
+        if(i >= j) return true;
+        int p = i;
+        while (postorder[p] < postorder[j]) p++;
+        int m = p;
+        while (postorder[p] > postorder[j]) p++;
+        return p == j && recur(postorder,i, m - 1) && recur(postorder, m + 1, j);
+    }
 }
