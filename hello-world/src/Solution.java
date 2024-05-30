@@ -1,15 +1,25 @@
+import java.util.Stack;
 
 public class Solution {
-    public boolean VerifySquenceOfBST(int [] sequence) {
-        return recur(sequence,0, sequence.length -1);
-    }
+    /**
+     * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
+     *
+     *
+     * @param pushV int整型一维数组
+     * @param popV int整型一维数组
+     * @return bool布尔型
+     */
+    public static boolean IsPopOrder (int[] pushV, int[] popV) {
 
-    boolean  recur(int[] postorder, int i, int j) {
-        if(i >= j) return true;
-        int p = i;
-        while (postorder[p] < postorder[j]) p++;
-        int m = p;
-        while (postorder[p] > postorder[j]) p++;
-        return p == j && recur(postorder,i, m - 1) && recur(postorder, m + 1, j);
+        Stack<Integer> stack = new Stack<>();
+        int i = 0;
+        for (int p : pushV) {
+            stack.add(p);
+            while (!stack.isEmpty() && p == popV[i]){
+                stack.pop();
+                i++;
+            }
+        }
+        return stack.isEmpty();
     }
 }
