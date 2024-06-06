@@ -1,25 +1,32 @@
-import java.util.Stack;
 
 public class Solution {
     /**
      * 代码中的类名、方法名、参数名已经指定，请勿修改，直接返回方法规定的值即可
      *
      *
-     * @param pushV int整型一维数组
-     * @param popV int整型一维数组
-     * @return bool布尔型
+     * @param nums int整型一维数组
+     * @return int整型
      */
-    public static boolean IsPopOrder (int[] pushV, int[] popV) {
-
-        Stack<Integer> stack = new Stack<>();
-        int i = 0;
-        for (int p : pushV) {
-            stack.add(p);
-            while (!stack.isEmpty() && p == popV[i]){
-                stack.pop();
-                i++;
+    public static int minNumberInRotateArray (int[] nums) {
+        // write code here
+        int left = 0;
+        int right = nums.length - 1;
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            if(nums[mid] == nums[right]) {
+                right --;
+            }else if(nums[mid] > nums[right]) {
+                left = mid + 1;
+            }else {
+                right = mid - 1;
             }
         }
-        return stack.isEmpty();
+        return nums[left];
+
+    }
+
+    public static void main(String[] args) {
+        int i = minNumberInRotateArray(new int[]{1, 0, 1, 1, 1});
+        System.out.println(i);
     }
 }

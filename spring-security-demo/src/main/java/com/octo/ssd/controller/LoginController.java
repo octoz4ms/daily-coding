@@ -22,19 +22,27 @@ public class LoginController {
     @PostMapping("/login")
     public Map<String,Object> login(@RequestBody User user) {
         HashMap<String, Object> result = new HashMap<>();
+        Authentication authenticate = null;
         // 用户认证
-        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+        try {
+            authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+        }catch (Exception e) {
+            System.out.println(e);
+        }
         // 认证失败
         if(Objects.isNull(authenticate)) {
+            result.put("msg", "认证失败");
             return result;
         }
         // 生成token
         LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
         String token = JwtUtils.generateToken(loginUser.getUsername());
+        System.out.println("token" + token);
         result.put("token", token);
         result.put("user", loginUser);
 
         //todo  存储token -> redis
+
         return result;
     }
 }
