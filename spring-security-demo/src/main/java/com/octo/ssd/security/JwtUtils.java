@@ -55,9 +55,20 @@ public class JwtUtils {
                 .compact();
     }
 
-    public boolean validateToken(String token) {
-        Claims claims = Jwts.parser().verifyWith(KEY).build().parseSignedClaims(token).getPayload();
-        String username = claims.get("username").toString();
+    public static boolean validateToken(String token) {
+        try {
+            Jwts.parser().verifyWith(KEY).build().parseSignedClaims(token).getPayload();
+            return true;
+        }catch (Exception e) {
+            System.out.println(e);
+        }
         return false;
     }
+
+    public static String getUsername(String token) {
+        Claims claims = Jwts.parser().verifyWith(KEY).build().parseSignedClaims(token).getPayload();
+        return (String) claims.get("username");
+    }
+
+
 }
