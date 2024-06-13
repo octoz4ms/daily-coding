@@ -54,9 +54,6 @@ public class User implements Serializable {
     @TableField("update_time")
     private LocalDate updateTime;
 
-    @TableField("desc")
-    private String desc;
-
     @TableField("user_type")
     private Integer userType;
 
