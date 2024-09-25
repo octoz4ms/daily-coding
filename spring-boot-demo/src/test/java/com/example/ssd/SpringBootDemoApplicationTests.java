@@ -1,30 +1,39 @@
 package com.example.ssd;
 
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.example.ssd.entity.User;
-import com.example.ssd.service.IUserService;
 import org.junit.jupiter.api.Test;
+import org.redisson.api.RBloomFilter;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 
 @SpringBootTest
 class SpringBootDemoApplicationTests {
 
     @Autowired
-    private IUserService userService;
+    private RedisTemplate redisTemplate;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedissonClient redissonClient;
 
     @Test
     void contextLoads() {
-        ValueOperations opsForValue = redisTemplate.opsForValue();
-        User user = new User();
-        user.setId(1L);
-        user.setName("zms");
-        opsForValue.set("user1", user);
+        RBloomFilter<Object> myFirstFilter = redissonClient.getBloomFilter("myFirstFilter");
+        myFirstFilter.tryInit(1000, 0.01);
+
+//        myFirstFilter.add("zms");
+//        myFirstFilter.add("zh");
+//        myFirstFilter.add("wff");
+
+
+        boolean zz = myFirstFilter.contains("zz");
+        boolean zms = myFirstFilter.contains("zms");
+    }
+
+    @Test
+    void test() {
+        Object a = 0;
+        System.out.println(a);
     }
 
 }

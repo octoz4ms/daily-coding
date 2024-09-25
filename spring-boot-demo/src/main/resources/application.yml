@@ -7,13 +7,14 @@ spring:
     username: root
     password: 123456
 
-  redis:
-    host: localhost
-    port: 6379
-    password: 1234
-    lettuce:
-      pool:
-        max-active: 8
-        max-wait: -1ms
-        max-idle: 8
-        min-idle: 0
+  data:
+    redis:
+      host: 111.229.106.212
+      password: Shuai3198@
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
