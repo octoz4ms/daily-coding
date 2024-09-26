@@ -1,51 +1,39 @@
 package com.example.ssd;
 
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.example.ssd.entity.User;
-import com.example.ssd.service.IUserService;
 import org.junit.jupiter.api.Test;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 
 @SpringBootTest
 class SpringBootDemoApplicationTests {
 
     @Autowired
-    private IUserService userService;
-
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate redisTemplate;
 
     @Autowired
     private RedissonClient redissonClient;
 
+    @Test
+    void contextLoads() {
+        RBloomFilter<Object> myFirstFilter = redissonClient.getBloomFilter("myFirstFilter");
+        myFirstFilter.tryInit(1000, 0.01);
 
-    public void addElementToBloomFilter(String element) {
-        RBloomFilter<Object> myBloomFilter = redissonClient.getBloomFilter("myBloomFilter");
-        myBloomFilter.tryInit(1000, 0.1);
-        myBloomFilter.add(element);
-    }
+//        myFirstFilter.add("zms");
+//        myFirstFilter.add("zh");
+//        myFirstFilter.add("wff");
 
-    public boolean mightContainElement(String element) {
-        RBloomFilter<String> bloomFilter = redissonClient.getBloomFilter("myBloomFilter");
-        return bloomFilter.contains(element);
+
+        boolean zz = myFirstFilter.contains("zz");
+        boolean zms = myFirstFilter.contains("zms");
     }
 
     @Test
     void test() {
-        addElementToBloomFilter("zms");
-        addElementToBloomFilter("wff");
-
-        boolean zms = mightContainElement("zms");
-        System.out.println(zms);
-        boolean zh = mightContainElement("zh");
-        System.out.println(zh);
+        Object a = 0;
+        System.out.println(a);
     }
-
-
 
 }

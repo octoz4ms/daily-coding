@@ -41,9 +41,10 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedissonClient redissionClient() {
+    public RedissonClient redissonClient() {
         Config config = new Config();
         config.useSingleServer().setAddress("redis://111.229.106.212:6379").setPassword("Shuai3198@");
         return Redisson.create(config);
     }
+
 }
