@@ -3,6 +3,9 @@ package com.example.ssd.config;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -35,5 +38,12 @@ public class RedisConfig {
 
         template.afterPropertiesSet();
         return template;
+    }
+
+    @Bean
+    public RedissonClient redissionClient() {
+        Config config = new Config();
+        config.useSingleServer().setAddress("redis://111.229.106.212:6379").setPassword("Shuai3198@");
+        return Redisson.create(config);
     }
 }

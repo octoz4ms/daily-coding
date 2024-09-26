@@ -8,9 +8,9 @@ spring:
     password: 123456
 
   redis:
-    host: localhost
+    host: 111.229.106.212
     port: 6379
-    password: 1234
+    password: Shuai3198@
     lettuce:
       pool:
         max-active: 8
