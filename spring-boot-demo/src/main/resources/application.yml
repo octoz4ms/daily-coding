@@ -3,17 +3,18 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/db_test?characterEncoding=UTF-8&serverTimezone=UTC
+    url: jdbc:mysql://111.229.106.212:3306/db_test?characterEncoding=UTF-8&serverTimezone=UTC
     username: root
-    password: 123456
-
-  redis:
-    host: 111.229.106.212
-    port: 6379
     password: Shuai3198@
-    lettuce:
-      pool:
-        max-active: 8
-        max-wait: -1ms
-        max-idle: 8
-        min-idle: 0
+
+  data:
+    redis:
+      host: 111.229.106.212
+      port: 6379
+      password: Shuai3198@
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
