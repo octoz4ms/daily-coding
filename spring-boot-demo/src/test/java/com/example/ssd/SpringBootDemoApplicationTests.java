@@ -5,35 +5,51 @@ import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
 
 @SpringBootTest
 class SpringBootDemoApplicationTests {
 
     @Autowired
-    private RedisTemplate redisTemplate;
-
-    @Autowired
     private RedissonClient redissonClient;
 
     @Test
-    void contextLoads() {
-        RBloomFilter<Object> myFirstFilter = redissonClient.getBloomFilter("myFirstFilter");
-        myFirstFilter.tryInit(1000, 0.01);
-
-//        myFirstFilter.add("zms");
-//        myFirstFilter.add("zh");
-//        myFirstFilter.add("wff");
-
-
-        boolean zz = myFirstFilter.contains("zz");
-        boolean zms = myFirstFilter.contains("zms");
+    public void test() {
+        RBloomFilter<Object> bloomFilter = redissonClient.getBloomFilter("BF");
+        bloomFilter.tryInit(1000, 0.1);
+        System.out.println(bloomFilter.count());
     }
 
     @Test
-    void test() {
-        Object a = 0;
-        System.out.println(a);
+    public void addUser() {
+        RBloomFilter<Object> bloomFilter = redissonClient.getBloomFilter("BF");
+        bloomFilter.add("zms");
     }
+
+    @Test
+    public void containUser() {
+        RBloomFilter<Object> bloomFilter = redissonClient.getBloomFilter("BF");
+        boolean zms = bloomFilter.contains("zms");
+        boolean zh = bloomFilter.contains("zh");
+        System.out.println(zms);
+        System.out.println(zh);
+    }
+
+//    @Autowired
+//    private RedissonClient redissonClient;
+//
+//    @Autowired
+//    private RBloomFilter<String> userRegisterBloomFilter;
+//
+//    @Autowired
+//    private RBloomFilter<String> ageRegisterBloomFilter;
+//
+//
+//    @Test
+//    void testBloomFilter() {
+////        userRegisterCachePenetrationBloomFilter.add("zms");
+////        System.out.println(userRegisterBloomFilter.contains("zms"));
+////        System.out.println(userRegisterBloomFilter.count());
+//        System.out.println(ageRegisterBloomFilter.count());
+//    }
 
 }
