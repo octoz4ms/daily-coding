@@ -16,10 +16,17 @@ class RabbitmqPublisherApplicationTests {
     }
 
     @Test
+    void createOrder() {
+        String exchangeName = "order.created.exchange";
+        String msg = "He bought some daily necessities.";
+        rabbitTemplate.convertAndSend(exchangeName, "zms.order.created", msg);
+    }
+
+    @Test
     void sendMessage() {
-        String exchangeName = "mall.order.exchange";
-        String msg = "用户张名帅在商场下单了！";
-        rabbitTemplate.convertAndSend(exchangeName, "zms.order", msg);
+        String exchangeName = "email.sending.exchange";
+        String msg = "hello, welcome to octo!";
+        rabbitTemplate.convertAndSend(exchangeName, "email.sending", msg);
     }
 
 }

@@ -10,7 +10,7 @@ spring:
         retry:
           enabled: true
           initial-interval: 1s
-          multiplier: 1
+          multiplier: 2
           max-attempts: 5
           max-interval: 50s
 
