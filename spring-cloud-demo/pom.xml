@@ -5,12 +5,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.0</version>
+        <version>3.0.2</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <groupId>com.octo.cloud</groupId>
-    <artifactId>spring-cloud-parent</artifactId>
+    <artifactId>spring-cloud-demo</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -20,7 +20,7 @@
     </modules>
 
     <properties>
-        <spring.boot.version>3.4.0</spring.boot.version>
+<!--        <spring.boot.version>3.4.0</spring.boot.version>-->
         <spring.cloud.version>2022.0.0</spring.cloud.version>
         <spring.cloud.alibaba.version>2022.0.0.0-RC2</spring.cloud.alibaba.version>
     </properties>
@@ -32,15 +32,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- spring boot -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
             <!-- spring cloud -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
