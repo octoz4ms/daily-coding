@@ -20,7 +20,6 @@
     </modules>
 
     <properties>
-<!--        <spring.boot.version>3.4.0</spring.boot.version>-->
         <spring.cloud.version>2022.0.0</spring.cloud.version>
         <spring.cloud.alibaba.version>2022.0.0.0-RC2</spring.cloud.alibaba.version>
     </properties>
