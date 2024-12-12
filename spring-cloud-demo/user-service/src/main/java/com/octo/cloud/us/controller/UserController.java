@@ -15,9 +15,10 @@ public class UserController {
     @Autowired
     private OrderClient orderClient;
 
-    @GetMapping()
+    @GetMapping("/hello")
     public void getUser() {
-        String order = orderClient.getOrder();
-        log.info("用户zms:" + order);
+        System.out.println("----------------------");
+//        String order = orderClient.getOrder();
+//        log.info("用户zms:" + order);
     }
 }
