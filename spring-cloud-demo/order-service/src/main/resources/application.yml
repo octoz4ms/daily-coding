@@ -5,5 +5,13 @@ spring:
     nacos:
       discovery:
         server-addr: 111.229.106.212:8848
+
+#    sentinel:
+#      transport:
+#        dashboard: localhost:8089
+#      #      filter:
+#      #        enabled: false
+#      web-context-unify: false
+
 server:
   port: 8081

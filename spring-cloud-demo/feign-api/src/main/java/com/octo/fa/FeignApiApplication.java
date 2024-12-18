@@ -1,15 +1,15 @@
-package com.octo.cloud.us;
+package com.octo.fa;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
-@EnableFeignClients(basePackages = "com.octo.fa.client")
-public class UserServiceApplication {
+@EnableFeignClients
+public class FeignApiApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(UserServiceApplication.class, args);
+        SpringApplication.run(FeignApiApplication.class, args);
     }
 
 }

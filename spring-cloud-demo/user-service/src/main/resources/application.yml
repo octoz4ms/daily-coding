@@ -8,8 +8,8 @@ spring:
     sentinel:
       transport:
         dashboard: localhost:8089
-      filter:
-        enabled: false
-      web-context-unify: false
+      #      filter:
+      #        enabled: false
+#      web-context-unify: false
 server:
   port: 8082
