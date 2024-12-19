@@ -40,6 +40,18 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
+        <!--        &lt;!&ndash; openfeign &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.cloud</groupId>-->
+        <!--            <artifactId>spring-cloud-starter-openfeign</artifactId>-->
+        <!--        </dependency>-->
+
+        <!--        &lt;!&ndash; 负载均衡器 &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.cloud</groupId>-->
+        <!--            <artifactId>spring-cloud-starter-loadbalancer</artifactId>-->
+        <!--        </dependency>-->
+
         <!-- sentinel -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>

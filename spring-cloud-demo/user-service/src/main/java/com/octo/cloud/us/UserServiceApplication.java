@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
-@EnableFeignClients(basePackages = "com.octo.fa.client")
+@EnableFeignClients(basePackages = {"com.octo.fa"})
 public class UserServiceApplication {
 
     public static void main(String[] args) {

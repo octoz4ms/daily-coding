@@ -10,6 +10,10 @@ spring:
         dashboard: localhost:8089
       #      filter:
       #        enabled: false
-#      web-context-unify: false
+      web-context-unify: false
 server:
   port: 8082
+
+feign:
+  sentinel:
+    enabled: true
