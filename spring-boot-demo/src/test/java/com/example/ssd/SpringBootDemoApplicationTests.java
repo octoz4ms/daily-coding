@@ -1,10 +1,14 @@
 package com.example.ssd;
 
+import cn.hutool.core.lang.Snowflake;
+import cn.hutool.core.util.IdUtil;
 import org.junit.jupiter.api.Test;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.UUID;
 
 @SpringBootTest
 class SpringBootDemoApplicationTests {
@@ -32,6 +36,15 @@ class SpringBootDemoApplicationTests {
         boolean zh = bloomFilter.contains("zh");
         System.out.println(zms);
         System.out.println(zh);
+    }
+
+    @Test
+    public void generateId() {
+        Snowflake snowflake = IdUtil.getSnowflake(1, 1);
+        String id = snowflake.nextIdStr();
+        System.out.println(id);
+        UUID uuid = UUID.randomUUID();
+        System.out.println(uuid.toString());
     }
 
 //    @Autowired

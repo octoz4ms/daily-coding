@@ -1,0 +1,22 @@
+2024-12-23 10:19:33.046 [main] INFO  com.example.ssd.SpringBootDemoApplicationTests - Starting SpringBootDemoApplicationTests using Java 17 with PID 24924 (started by zhang in D:\MyProjects\daily-coding\spring-boot-demo)
+2024-12-23 10:19:33.048 [main] INFO  com.example.ssd.SpringBootDemoApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2024-12-23 10:19:33.985 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2024-12-23 10:19:33.988 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2024-12-23 10:19:34.018 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 12 ms. Found 0 Redis repository interfaces.
+2024-12-23 10:19:34.779 [main] INFO  org.redisson.Version - Redisson 3.31.0
+2024-12-23 10:19:35.311 [redisson-netty-1-6] INFO  org.redisson.connection.ConnectionsHolder - 1 connections initialized for 111.229.106.212/111.229.106.212:6379
+2024-12-23 10:19:36.889 [redisson-netty-1-19] INFO  org.redisson.connection.ConnectionsHolder - 24 connections initialized for 111.229.106.212/111.229.106.212:6379
+2024-12-23 10:19:37.719 [main] INFO  o.s.b.a.web.servlet.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2024-12-23 10:19:38.405 [main] INFO  o.s.b.actuate.endpoint.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
+2024-12-23 10:19:38.481 [main] INFO  com.example.ssd.SpringBootDemoApplicationTests - Started SpringBootDemoApplicationTests in 5.81 seconds (process running for 6.888)
+2024-12-23 10:22:54.067 [main] INFO  com.example.ssd.SpringBootDemoApplicationTests - Starting SpringBootDemoApplicationTests using Java 17 with PID 10504 (started by zhang in D:\MyProjects\daily-coding\spring-boot-demo)
+2024-12-23 10:22:54.068 [main] INFO  com.example.ssd.SpringBootDemoApplicationTests - No active profile set, falling back to 1 default profile: "default"
+2024-12-23 10:22:54.867 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2024-12-23 10:22:54.870 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2024-12-23 10:22:54.896 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 13 ms. Found 0 Redis repository interfaces.
+2024-12-23 10:22:55.501 [main] INFO  org.redisson.Version - Redisson 3.31.0
+2024-12-23 10:22:55.901 [redisson-netty-1-6] INFO  org.redisson.connection.ConnectionsHolder - 1 connections initialized for 111.229.106.212/111.229.106.212:6379
+2024-12-23 10:22:57.432 [redisson-netty-1-19] INFO  org.redisson.connection.ConnectionsHolder - 24 connections initialized for 111.229.106.212/111.229.106.212:6379
+2024-12-23 10:22:58.127 [main] INFO  o.s.b.a.web.servlet.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+2024-12-23 10:22:58.718 [main] INFO  o.s.b.actuate.endpoint.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
+2024-12-23 10:22:58.783 [main] INFO  com.example.ssd.SpringBootDemoApplicationTests - Started SpringBootDemoApplicationTests in 5.046 seconds (process running for 5.891)
