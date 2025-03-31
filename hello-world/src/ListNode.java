@@ -3,6 +3,7 @@ import java.util.ArrayList;
 public class ListNode {
     int val;
     ListNode next = null;
+
     public ListNode(int val) {
         this.val = val;
     }
@@ -24,5 +25,9 @@ public class ListNode {
             head = head.next;
         }
         System.out.println(list);
+    }
+
+    public void hello() {
+
     }
 }

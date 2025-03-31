@@ -146,8 +146,4 @@ public class UserController {
         }
     }
 
-    @GetMapping("/seckill2")
-    public String seckill2() {
-        
-    }
 }

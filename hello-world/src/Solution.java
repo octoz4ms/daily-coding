@@ -1,27 +1,71 @@
-import java.util.Comparator;
-import java.util.PriorityQueue;
-
 public class Solution {
-    public static void main(String[] args) {
-        Comparator<Integer> comparator = new Comparator<>() {
-            @Override
-            public int compare(Integer o1, Integer o2) {
-                return o1 - o2;
-            }
-        };
+    public static void main(String[] args){
 
-        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(comparator);
-        priorityQueue.add(3);
-        priorityQueue.add(7);
-        priorityQueue.add(10);
-        priorityQueue.add(2);
-        System.out.println(priorityQueue);
-
-        while (!priorityQueue.isEmpty()){
-            System.out.println(priorityQueue.poll());
-        }
-
-        System.out.println(priorityQueue);
     }
-
 }
+
+
+
+//import java.util.concurrent.*;
+//
+//public class Solution {
+//    public static void main(String[] args) throws ExecutionException, InterruptedException {
+//
+//        // 继承Thread类的方式
+//        Thread myThread = new MyThread();
+//        Thread thread = new Thread() {
+//            @Override
+//            public void run() {
+//                System.out.println("继承Thread类的方式创建线程！");
+//            }
+//        };
+//        thread.start();
+//
+//        // runnable方式
+//        new Thread(() -> {
+//            System.out.println("1、runnable方式创建线程！");
+//        }).start();
+//
+//        MyRunnable myRunnable = new MyRunnable();
+//        new Thread(myRunnable).start();
+//
+//        // callable方式
+//        FutureTask<String> futureTask = new FutureTask<>(() -> {
+//            return "2、callable方式创建线程！";
+//        });
+//        new Thread(futureTask).start();
+//        System.out.println(futureTask.get());
+//
+//
+//        // 线程池方式
+//        ExecutorService pool = Executors.newFixedThreadPool(10);
+//        // callable
+//        Callable<String> task = () -> {
+//            return "3、向线程池提交callable任务";
+//        };
+//        Future<String> future = pool.submit(task);
+//        System.out.println(future.get());
+//
+//        // runnable
+//        Runnable runnable = () -> {
+//            System.out.println("4、向线程池提交runnable任务");
+//        };
+//        pool.submit(runnable);
+//        pool.shutdown();
+//    }
+//}
+//
+//class MyThread extends Thread {
+//    @Override
+//    public void run() {
+//        System.out.println("0、继承Thread类的方式创建线程！");
+//    }
+//}
+//
+//
+//class MyRunnable implements Runnable {
+//    @Override
+//    public void run() {
+//        System.out.println("runnable方式创建线程！");
+//    }
+//}
