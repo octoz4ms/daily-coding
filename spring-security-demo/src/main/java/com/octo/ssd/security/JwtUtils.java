@@ -22,21 +22,22 @@ public class JwtUtils {
 
     private final static String SUBJECT = "Peripherals";
 
-    public static final int ACCESS_EXPIRE = 60;
+    public static final int ACCESS_EXPIRE = 60000;
 
     /**
      * 创建token
+     *
      * @param username 用户名
      * @return token
      */
     public static String generateToken(String username) {
         Date now = new Date();
-        Date exprireDate  = Date.from(Instant.now().plusSeconds(ACCESS_EXPIRE));
+        Date exprireDate = Date.from(Instant.now().plusSeconds(ACCESS_EXPIRE));
         String uuid = UUID.randomUUID().toString();
         return Jwts.builder()
                 .header()
-                .add("typ","JWT")
-                .add("alg","HS256")
+                .add("typ", "JWT")
+                .add("alg", "HS256")
                 .and()
                 // 设置自定义负载信息payload
                 .claim("username", username)
@@ -59,7 +60,7 @@ public class JwtUtils {
         try {
             Jwts.parser().verifyWith(KEY).build().parseSignedClaims(token).getPayload();
             return true;
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e);
         }
         return false;
