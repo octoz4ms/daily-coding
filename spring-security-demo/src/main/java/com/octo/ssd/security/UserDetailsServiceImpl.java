@@ -1,6 +1,5 @@
 package com.octo.ssd.security;
 
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.octo.ssd.entity.User;
 import com.octo.ssd.service.IUserService;
 import jakarta.annotation.Resource;
@@ -16,12 +15,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 查询用户信息
-        User user = userService.getOne(Wrappers.lambdaQuery(User.class).eq(User::getUsername, username));
-        // 封装数据 -> UserDetails
-        if (user == null) {
-            return null;
-        }
-        return new LoginUser(user);
+        return userService.lambdaQuery()
+                .eq(User::getUsername, username)
+                .oneOpt().map(LoginUser::new)
+                .orElseThrow(() -> new UsernameNotFoundException("用户不存在"));
     }
 }
