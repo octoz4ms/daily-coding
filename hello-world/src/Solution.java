@@ -1,9 +1,25 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+
 public class Solution {
-    public static void main(String[] args){
+    public static void main(String[] args) {
+        List<String> strings = generateParenthesis(3);
+        System.out.println(strings);
+    }
+
+    public static List<String> generateParenthesis(int n) {
+        List<String> res = new ArrayList<>();
+        Stack<Character> stack = new Stack<>();
+        Stack<Character> stack1 = new Stack<>();
+
+        for (int i = 1; i <= n; i++) {
+            stack.push('(');
+            
+        }
 
     }
 }
-
 
 
 //import java.util.concurrent.*;

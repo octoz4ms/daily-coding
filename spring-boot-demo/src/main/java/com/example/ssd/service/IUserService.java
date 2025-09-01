@@ -1,11 +1,11 @@
 package com.example.ssd.service;
 
-import com.example.ssd.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.ssd.entity.User;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author zms
@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IUserService extends IService<User> {
 
+    public String getUserName(Long userId);
 }
