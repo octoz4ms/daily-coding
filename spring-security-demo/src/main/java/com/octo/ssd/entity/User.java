@@ -10,6 +10,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * <p>
@@ -37,5 +38,9 @@ public class User implements Serializable {
     @TableField("password")
     private String password;
 
+    @TableField(exist = false)
+    private List<String> roles;
 
+    @TableField(exist = false)
+    private List<String> permissions;
 }

@@ -13,9 +13,18 @@ import java.io.IOException;
 public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        // 设置响应内容类型
-        response.setContentType("application/json");
-        // 这里简单模拟JSON响应
-        response.getWriter().write("fail！");
+        // 设置响应状态码为 401（未认证）
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+        // 设置 Content-Type 并指定 UTF-8
+        response.setContentType("application/json;charset=UTF-8");
+
+        // 构造规范化 JSON 响应
+        String json = String.format("{\"code\":%d,\"message\":\"%s\"}",
+                HttpServletResponse.SC_UNAUTHORIZED,
+                "未登录或身份验证失败");
+
+        // 写入响应
+        response.getWriter().write(json);
     }
 }

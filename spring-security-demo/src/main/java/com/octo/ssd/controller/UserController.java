@@ -4,15 +4,16 @@ package com.octo.ssd.controller;
 import com.octo.ssd.entity.User;
 import com.octo.ssd.service.IUserService;
 import jakarta.annotation.Resource;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * <p>
- *  前端控制器
+ * 前端控制器
  * </p>
  *
  * @author zms
@@ -25,7 +26,9 @@ public class UserController {
     private IUserService userService;
 
     @GetMapping("{id}")
+    @PreAuthorize("hasRole('ADMIN') and hasAuthority('ROLE_USER')")
     public User findUserById(@PathVariable String id) {
+        System.out.println(SecurityContextHolder.getContext().getAuthentication().getAuthorities());
         return userService.getById(id);
     }
 }
