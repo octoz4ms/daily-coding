@@ -26,7 +26,7 @@ public class UserController {
     private IUserService userService;
 
     @GetMapping("{id}")
-    @PreAuthorize("hasRole('ADMIN') and hasAuthority('ROLE_USER')")
+    @PreAuthorize("hasRole('ADMIN') and hasAuthority('system:user')")
     public User findUserById(@PathVariable String id) {
         System.out.println(SecurityContextHolder.getContext().getAuthentication().getAuthorities());
         return userService.getById(id);
