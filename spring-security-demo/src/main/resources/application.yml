@@ -3,8 +3,35 @@ spring:
     name: spring-security-demo
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: "jdbc:mysql://localhost:3306/db_02?useSSL=false&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8"
+    url: "jdbc:mysql://49.233.155.253:3306/db_test?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8"
     username: root
-    password: 1234
+    password: 123456
+  data:
+    redis:
+      host: 49.233.155.253
+      port: 6379
+      database: 0
+      username: root
+      password: 123456
+      # 连接超时
+      connect-timeout: 5s
+      # 读超时
+      timeout: 5s
+
+      # Lettuce 客户端的配置
+      lettuce:
+        # 连接池配置
+        pool:
+          # 最小空闲连接
+          min-idle: 0
+          # 最大空闲连接
+          max-idle: 8
+          # 最大活跃连接
+          max-active: 8
+          # 从连接池获取连接 最大超时时间，小于等于0则表示不会超时
+          max-wait: -1ms
+
 server:
   port: 8081
+
+
