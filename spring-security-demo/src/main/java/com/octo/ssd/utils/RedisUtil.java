@@ -1,20 +1,26 @@
-package com.example.common.utils;
+package com.octo.ssd.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
- * 企业通用 Redis 工具类
- * 规范：
- * - key 必须加业务前缀，例如 "user:info:1001"
- * - 默认使用 JSON 序列化，存取对象可读
- * - 封装常用操作，避免直接调用 RedisTemplate
+ * Redis 工具类
+ *
+ * <p>企业通用封装，支持字符串、对象、Hash、List、Set 等常用缓存操作
+ * 统一使用 JSON 序列化，避免类型转换问题</p>
+ * <p>
+ * 使用示例：
+ * <pre>
+ *     redisUtil.set("user:1", user, 10, TimeUnit.MINUTES);
+ *     User user = redisUtil.get("user:1", User.class);
+ * </pre>
  */
 @Component
 public class RedisUtil {
@@ -22,56 +28,46 @@ public class RedisUtil {
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    /* ============================= 通用 ============================= */
+    /* ============================= 通用操作 ============================= */
 
     /**
-     * 设置值
+     * 设置缓存（带过期时间）
      */
-    public void set(String key, Object value) {
-        redisTemplate.opsForValue().set(key, value);
+    public <T> void set(String key, T value, long timeout, TimeUnit unit) {
+        redisTemplate.opsForValue().set(key, toJson(value), timeout, unit);
     }
 
     /**
-     * 设置值并设置过期时间
+     * 设置缓存（无过期时间）
      */
-    public void set(String key, Object value, long timeout, TimeUnit unit) {
-        redisTemplate.opsForValue().set(key, value, timeout, unit);
+    public <T> void set(String key, T value) {
+        redisTemplate.opsForValue().set(key, toJson(value));
     }
 
     /**
-     * 获取值（Object）
-     */
-    public Object get(String key) {
-        return redisTemplate.opsForValue().get(key);
-    }
-
-    /**
-     * 获取值（泛型）
+     * 获取缓存（对象）
      */
     public <T> T get(String key, Class<T> clazz) {
-        Object value = redisTemplate.opsForValue().get(key);
-        if (value == null) {
+        Object json = redisTemplate.opsForValue().get(key);
+        if (json == null) {
             return null;
         }
-        if (clazz.isInstance(value)) {
-            return clazz.cast(value);
-        }
-        return objectMapper.convertValue(value, clazz);
+        return fromJson(json.toString(), clazz);
     }
 
     /**
-     * 删除 key
+     * 删除缓存
      */
-    public Boolean del(String key) {
+    public Boolean delete(String key) {
         return redisTemplate.delete(key);
     }
 
     /**
-     * 批量删除 key
+     * 批量删除
      */
-    public Long del(Collection<String> keys) {
+    public Long delete(Collection<String> keys) {
         return redisTemplate.delete(keys);
     }
 
@@ -90,110 +86,98 @@ public class RedisUtil {
     }
 
     /**
-     * 获取过期时间（秒）
+     * 获取剩余过期时间
      */
-    public Long getExpire(String key) {
-        return redisTemplate.getExpire(key, TimeUnit.SECONDS);
-    }
-
-    /**
-     * 模糊查询 key
-     */
-    public Set<String> scan(String pattern) {
-        return redisTemplate.keys(pattern);
-    }
-
-    /* ============================= 批量操作 ============================= */
-
-    public void mset(Map<String, Object> map) {
-        redisTemplate.opsForValue().multiSet(map);
-    }
-
-    public List<Object> mget(Collection<String> keys) {
-        return redisTemplate.opsForValue().multiGet(keys);
-    }
-
-    public <T> List<T> mget(Collection<String> keys, Class<T> clazz) {
-        List<Object> values = redisTemplate.opsForValue().multiGet(keys);
-        if (values == null) {
-            return Collections.emptyList();
-        }
-        return values.stream()
-                .filter(Objects::nonNull)
-                .map(v -> clazz.isInstance(v) ? clazz.cast(v) : objectMapper.convertValue(v, clazz))
-                .collect(Collectors.toList());
+    public Long getExpire(String key, TimeUnit unit) {
+        return redisTemplate.getExpire(key, unit);
     }
 
     /* ============================= Hash ============================= */
 
-    public void hset(String key, String field, Object value) {
-        redisTemplate.opsForHash().put(key, field, value);
+    public void hSet(String key, String field, Object value) {
+        redisTemplate.opsForHash().put(key, field, toJson(value));
     }
 
-    public Object hget(String key, String field) {
-        return redisTemplate.opsForHash().get(key, field);
+    public <T> T hGet(String key, String field, Class<T> clazz) {
+        Object json = redisTemplate.opsForHash().get(key, field);
+        return json == null ? null : fromJson(json.toString(), clazz);
     }
 
-    public <T> T hget(String key, String field, Class<T> clazz) {
-        Object value = redisTemplate.opsForHash().get(key, field);
-        return value == null ? null : objectMapper.convertValue(value, clazz);
-    }
-
-    public Map<Object, Object> hgetAll(String key) {
+    public Map<Object, Object> hGetAll(String key) {
         return redisTemplate.opsForHash().entries(key);
     }
 
-    public void hdel(String key, Object... fields) {
+    public void hDel(String key, Object... fields) {
         redisTemplate.opsForHash().delete(key, fields);
     }
 
     /* ============================= List ============================= */
 
-    public void lpush(String key, Object value) {
-        redisTemplate.opsForList().leftPush(key, value);
+    public void lPush(String key, Object value) {
+        redisTemplate.opsForList().leftPush(key, toJson(value));
     }
 
-    public void rpush(String key, Object value) {
-        redisTemplate.opsForList().rightPush(key, value);
+    public <T> T rPop(String key, Class<T> clazz) {
+        Object json = redisTemplate.opsForList().rightPop(key);
+        return json == null ? null : fromJson(json.toString(), clazz);
     }
 
-    public Object lpop(String key) {
-        return redisTemplate.opsForList().leftPop(key);
-    }
-
-    public Object rpop(String key) {
-        return redisTemplate.opsForList().rightPop(key);
-    }
-
-    public List<Object> lrange(String key, long start, long end) {
-        return redisTemplate.opsForList().range(key, start, end);
+    public <T> T lIndex(String key, long index, Class<T> clazz) {
+        Object json = redisTemplate.opsForList().index(key, index);
+        return json == null ? null : fromJson(json.toString(), clazz);
     }
 
     /* ============================= Set ============================= */
 
-    public void sadd(String key, Object... values) {
-        redisTemplate.opsForSet().add(key, values);
+    public void sAdd(String key, Object... values) {
+        for (Object value : values) {
+            redisTemplate.opsForSet().add(key, toJson(value));
+        }
     }
 
-    public Set<Object> smembers(String key) {
-        return redisTemplate.opsForSet().members(key);
+    public Boolean sIsMember(String key, Object value) {
+        return redisTemplate.opsForSet().isMember(key, toJson(value));
     }
 
-    public Boolean sismember(String key, Object value) {
-        return redisTemplate.opsForSet().isMember(key, value);
+    public Long sSize(String key) {
+        return redisTemplate.opsForSet().size(key);
     }
 
-    /* ============================= ZSet ============================= */
+    /* ============================= 分布式锁 ============================= */
 
-    public void zadd(String key, Object value, double score) {
-        redisTemplate.opsForZSet().add(key, value, score);
+    /**
+     * 尝试获取分布式锁
+     */
+    public Boolean tryLock(String key, String value, long timeout, TimeUnit unit) {
+        return redisTemplate.opsForValue().setIfAbsent(key, value, timeout, unit);
     }
 
-    public Set<Object> zrange(String key, long start, long end) {
-        return redisTemplate.opsForZSet().range(key, start, end);
+    /**
+     * 释放分布式锁（保证 value 匹配，避免误删）
+     */
+    public Boolean unlock(String key, String value) {
+        Object currentValue = redisTemplate.opsForValue().get(key);
+        if (value.equals(currentValue)) {
+            return redisTemplate.delete(key);
+        }
+        return false;
     }
 
-    public Long zrem(String key, Object... values) {
-        return redisTemplate.opsForZSet().remove(key, values);
+    /* ============================= JSON 封装 ============================= */
+
+    private String toJson(Object value) {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("RedisUtil 序列化失败", e);
+        }
+    }
+
+    private <T> T fromJson(String json, Class<T> clazz) {
+        try {
+            return OBJECT_MAPPER.readValue(json, clazz);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("RedisUtil 反序列化失败", e);
+        }
     }
 }
