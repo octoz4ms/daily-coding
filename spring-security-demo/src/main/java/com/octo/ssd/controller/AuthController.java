@@ -26,6 +26,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody User user) {
+        System.out.println(user.getUsername());
+        System.out.println(user.getPassword());
         // 使用AuthenticationManager进行身份验证
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())

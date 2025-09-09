@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serial;
 import java.time.LocalDateTime;
 import java.io.Serializable;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -26,8 +25,8 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("tb_user")
-public class User implements Serializable {
+@TableName("tb_role")
+public class Role implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -35,14 +34,17 @@ public class User implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @TableField("user_no")
-    private String userNo;
+    @TableField("role_no")
+    private String roleNo;
 
-    @TableField("username")
-    private String username;
+    @TableField("role_code")
+    private String roleCode;
 
-    @TableField("password")
-    private String password;
+    @TableField("role_name")
+    private String roleName;
+
+    @TableField("description")
+    private String description;
 
     @TableField("create_time")
     private LocalDateTime createTime;
@@ -50,10 +52,5 @@ public class User implements Serializable {
     @TableField("update_time")
     private LocalDateTime updateTime;
 
-    @TableField(exist = false)
-    private List<String> roles;
-
-    @TableField(exist = false)
-    private List<String> permissions;
 
 }

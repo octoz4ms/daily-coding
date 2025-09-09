@@ -4,11 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-
-import java.io.Serial;
 import java.time.LocalDateTime;
 import java.io.Serializable;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -26,23 +23,25 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("tb_user")
-public class User implements Serializable {
+@TableName("tb_permission")
+public class Permission implements Serializable {
 
-    @Serial
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @TableField("user_no")
-    private String userNo;
+    @TableField("perm_no")
+    private String permNo;
 
-    @TableField("username")
-    private String username;
+    @TableField("perm_code")
+    private String permCode;
 
-    @TableField("password")
-    private String password;
+    @TableField("perm_name")
+    private String permName;
+
+    @TableField("description")
+    private String description;
 
     @TableField("create_time")
     private LocalDateTime createTime;
@@ -50,10 +49,5 @@ public class User implements Serializable {
     @TableField("update_time")
     private LocalDateTime updateTime;
 
-    @TableField(exist = false)
-    private List<String> roles;
-
-    @TableField(exist = false)
-    private List<String> permissions;
 
 }

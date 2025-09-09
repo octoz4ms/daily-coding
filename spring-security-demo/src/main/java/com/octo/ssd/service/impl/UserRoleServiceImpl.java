@@ -1,8 +1,8 @@
 package com.octo.ssd.service.impl;
 
-import com.octo.ssd.entity.User;
-import com.octo.ssd.mapper.UserMapper;
-import com.octo.ssd.service.IUserService;
+import com.octo.ssd.entity.UserRole;
+import com.octo.ssd.mapper.UserRoleMapper;
+import com.octo.ssd.service.IUserRoleService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +15,6 @@ import org.springframework.stereotype.Service;
  * @since 2025-09-09
  */
 @Service
-public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
+public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> implements IUserRoleService {
 
 }

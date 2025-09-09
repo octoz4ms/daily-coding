@@ -35,3 +35,9 @@ server:
   port: 8081
 
 
+mybatis-plus:
+  configuration:
+    # 如果项目无日志框架，可以考虑指定为 org.apache.ibatis.logging.stdout.StdOutImpl (请勿在实际生产中使用).
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+

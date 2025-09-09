@@ -1,6 +1,6 @@
 package com.octo.ssd.mapper;
 
-import com.octo.ssd.entity.User;
+import com.octo.ssd.entity.UserRole;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author author
  * @since 2025-09-09
  */
-public interface UserMapper extends BaseMapper<User> {
+public interface UserRoleMapper extends BaseMapper<UserRole> {
 
 }

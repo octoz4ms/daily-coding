@@ -1,6 +1,6 @@
 package com.octo.ssd.service;
 
-import com.octo.ssd.entity.User;
+import com.octo.ssd.entity.UserRole;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author author
  * @since 2025-09-09
  */
-public interface IUserService extends IService<User> {
+public interface IUserRoleService extends IService<UserRole> {
 
 }
