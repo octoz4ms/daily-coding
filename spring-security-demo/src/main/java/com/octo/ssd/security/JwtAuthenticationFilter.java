@@ -1,5 +1,7 @@
 package com.octo.ssd.security;
 
+import com.octo.ssd.entity.User;
+import com.octo.ssd.utils.RedisUtil;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Resource;
 import jakarta.servlet.FilterChain;
@@ -19,6 +21,9 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Resource
     private UserDetailsServiceImpl userDetailsService;
+
+    @Resource
+    private RedisUtil redisUtil;
 
     /**
      * JWT认证过滤器，用于验证请求中的JWT令牌并设置Spring Security上下文
@@ -41,11 +46,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String username = JwtUtils.getUsername(token);
 
             // 根据用户名加载用户详细信息，后期替换为redis获取
-            LoginUser loginUser = (LoginUser) userDetailsService.loadUserByUsername(username);
+            User user = redisUtil.get("login:user:" + token, User.class);
 
             // 用户信息不存在时，可能是登出、删除、禁用或者不可用
-            if (loginUser != null) {
+            if (user != null) {
                 // 创建认证对象，包含用户信息和权限列表
+                LoginUser loginUser = new LoginUser(user);
                 Authentication authentication = new UsernamePasswordAuthenticationToken(
                         loginUser, null, loginUser.getAuthorities());
                 // 将认证信息存储到安全上下文中

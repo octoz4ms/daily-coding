@@ -2,105 +2,98 @@ package com.octo.ssd.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Redis 工具类
- *
- * <p>企业通用封装，支持字符串、对象、Hash、List、Set 等常用缓存操作
- * 统一使用 JSON 序列化，避免类型转换问题</p>
- * <p>
- * 使用示例：
- * <pre>
- *     redisUtil.set("user:1", user, 10, TimeUnit.MINUTES);
- *     User user = redisUtil.get("user:1", User.class);
- * </pre>
- */
+@Slf4j
 @Component
 public class RedisUtil {
 
-    @Resource
-    private RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-    /* ============================= 通用操作 ============================= */
-
-    /**
-     * 设置缓存（带过期时间）
-     */
-    public <T> void set(String key, T value, long timeout, TimeUnit unit) {
-        redisTemplate.opsForValue().set(key, toJson(value), timeout, unit);
+    @Autowired
+    public RedisUtil(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
+        this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
     }
 
-    /**
-     * 设置缓存（无过期时间）
-     */
-    public <T> void set(String key, T value) {
-        redisTemplate.opsForValue().set(key, toJson(value));
-    }
+    /* ==================== common ==================== */
 
     /**
-     * 获取缓存（对象）
+     * 设置过期时间
      */
-    public <T> T get(String key, Class<T> clazz) {
-        Object json = redisTemplate.opsForValue().get(key);
-        if (json == null) {
-            return null;
+    public boolean expire(String key, long timeout, TimeUnit unit) {
+        try {
+            return Boolean.TRUE.equals(redisTemplate.expire(key, timeout, unit));
+        } catch (Exception e) {
+            log.error("Redis expire error, key={}", key, e);
+            return false;
         }
-        return fromJson(json.toString(), clazz);
     }
 
     /**
-     * 删除缓存
+     * 获取过期时间(秒)
      */
-    public Boolean delete(String key) {
-        return redisTemplate.delete(key);
-    }
-
-    /**
-     * 批量删除
-     */
-    public Long delete(Collection<String> keys) {
-        return redisTemplate.delete(keys);
+    public long getExpire(String key) {
+        return redisTemplate.getExpire(key, TimeUnit.SECONDS);
     }
 
     /**
      * 判断 key 是否存在
      */
-    public Boolean hasKey(String key) {
-        return redisTemplate.hasKey(key);
+    public boolean hasKey(String key) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 
     /**
-     * 设置过期时间
+     * 删除 key
      */
-    public Boolean expire(String key, long timeout, TimeUnit unit) {
-        return redisTemplate.expire(key, timeout, unit);
+    public void delete(String key) {
+        redisTemplate.delete(key);
     }
 
-    /**
-     * 获取剩余过期时间
-     */
-    public Long getExpire(String key, TimeUnit unit) {
-        return redisTemplate.getExpire(key, unit);
+    /* ==================== String ==================== */
+
+    public void set(String key, Object value) {
+        redisTemplate.opsForValue().set(key, value);
     }
 
-    /* ============================= Hash ============================= */
+    public void set(String key, Object value, long timeout, TimeUnit unit) {
+        redisTemplate.opsForValue().set(key, value, timeout, unit);
+    }
+
+    public <T> T get(String key, Class<T> clazz) {
+        Object obj = redisTemplate.opsForValue().get(key);
+        if (obj == null) {
+            return null;
+        }
+        if (clazz.isInstance(obj)) {
+            return clazz.cast(obj);
+        }
+        try {
+            return objectMapper.readValue(obj.toString(), clazz);
+        } catch (JsonProcessingException e) {
+            log.error("Redis get error, key={}, targetClass={}", key, clazz, e);
+            return null;
+        }
+    }
+
+    /* ==================== Hash ==================== */
 
     public void hSet(String key, String field, Object value) {
-        redisTemplate.opsForHash().put(key, field, toJson(value));
+        redisTemplate.opsForHash().put(key, field, value);
     }
 
-    public <T> T hGet(String key, String field, Class<T> clazz) {
-        Object json = redisTemplate.opsForHash().get(key, field);
-        return json == null ? null : fromJson(json.toString(), clazz);
+    public Object hGet(String key, String field) {
+        return redisTemplate.opsForHash().get(key, field);
     }
 
     public Map<Object, Object> hGetAll(String key) {
@@ -111,73 +104,45 @@ public class RedisUtil {
         redisTemplate.opsForHash().delete(key, fields);
     }
 
-    /* ============================= List ============================= */
+    /* ==================== List ==================== */
 
     public void lPush(String key, Object value) {
-        redisTemplate.opsForList().leftPush(key, toJson(value));
+        redisTemplate.opsForList().leftPush(key, value);
     }
 
-    public <T> T rPop(String key, Class<T> clazz) {
-        Object json = redisTemplate.opsForList().rightPop(key);
-        return json == null ? null : fromJson(json.toString(), clazz);
+    public Object lPop(String key) {
+        return redisTemplate.opsForList().leftPop(key);
     }
 
-    public <T> T lIndex(String key, long index, Class<T> clazz) {
-        Object json = redisTemplate.opsForList().index(key, index);
-        return json == null ? null : fromJson(json.toString(), clazz);
+    public List<Object> lRange(String key, long start, long end) {
+        return redisTemplate.opsForList().range(key, start, end);
     }
 
-    /* ============================= Set ============================= */
+    /* ==================== Set ==================== */
 
     public void sAdd(String key, Object... values) {
-        for (Object value : values) {
-            redisTemplate.opsForSet().add(key, toJson(value));
-        }
+        redisTemplate.opsForSet().add(key, values);
     }
 
-    public Boolean sIsMember(String key, Object value) {
-        return redisTemplate.opsForSet().isMember(key, toJson(value));
+    public Set<Object> sMembers(String key) {
+        return redisTemplate.opsForSet().members(key);
     }
 
-    public Long sSize(String key) {
-        return redisTemplate.opsForSet().size(key);
+    public boolean sIsMember(String key, Object value) {
+        return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(key, value));
     }
 
-    /* ============================= 分布式锁 ============================= */
+    /* ==================== ZSet ==================== */
 
-    /**
-     * 尝试获取分布式锁
-     */
-    public Boolean tryLock(String key, String value, long timeout, TimeUnit unit) {
-        return redisTemplate.opsForValue().setIfAbsent(key, value, timeout, unit);
+    public void zAdd(String key, Object value, double score) {
+        redisTemplate.opsForZSet().add(key, value, score);
     }
 
-    /**
-     * 释放分布式锁（保证 value 匹配，避免误删）
-     */
-    public Boolean unlock(String key, String value) {
-        Object currentValue = redisTemplate.opsForValue().get(key);
-        if (value.equals(currentValue)) {
-            return redisTemplate.delete(key);
-        }
-        return false;
+    public Set<Object> zRange(String key, long start, long end) {
+        return redisTemplate.opsForZSet().range(key, start, end);
     }
 
-    /* ============================= JSON 封装 ============================= */
-
-    private String toJson(Object value) {
-        try {
-            return OBJECT_MAPPER.writeValueAsString(value);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("RedisUtil 序列化失败", e);
-        }
-    }
-
-    private <T> T fromJson(String json, Class<T> clazz) {
-        try {
-            return OBJECT_MAPPER.readValue(json, clazz);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("RedisUtil 反序列化失败", e);
-        }
+    public Long zRemove(String key, Object... values) {
+        return redisTemplate.opsForZSet().remove(key, values);
     }
 }
