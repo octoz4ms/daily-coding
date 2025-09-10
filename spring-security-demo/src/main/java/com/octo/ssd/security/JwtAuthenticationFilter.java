@@ -20,9 +20,6 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Resource
-    private UserDetailsServiceImpl userDetailsService;
-
-    @Resource
     private RedisUtil redisUtil;
 
     /**

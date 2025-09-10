@@ -1,5 +1,6 @@
 package com.octo.ssd.controller;
 
+import com.octo.ssd.config.JwtProperties;
 import com.octo.ssd.entity.User;
 import com.octo.ssd.security.JwtUtils;
 import com.octo.ssd.security.LoginUser;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/auth")
@@ -24,10 +26,11 @@ public class AuthController {
     @Resource
     private RedisUtil redisUtil;
 
+    @Resource
+    private JwtProperties jwtProperties;
+
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody User user) {
-        System.out.println(user.getUsername());
-        System.out.println(user.getPassword());
         // 使用AuthenticationManager进行身份验证
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
@@ -40,7 +43,10 @@ public class AuthController {
         String token = JwtUtils.generateToken(loginUser.getUsername());
 
         // 存储token -> redis
-        redisUtil.set("login:user:" + token, loginUser.getUser());
+        redisUtil.set("login:user:" + token,
+                loginUser.getUser(),
+                jwtProperties.getAccessExpire(),
+                TimeUnit.MILLISECONDS);
 
         // 构建返回结果
         Map<String, Object> resultMap = new LinkedHashMap<>();
@@ -52,19 +58,12 @@ public class AuthController {
 
     @PostMapping("/logout")
     public String logout(@RequestHeader("Authorization") String token) {
-        // 检查 Token 是否存在且格式正确
         if (!StringUtils.hasText(token) || !token.startsWith("Bearer ")) {
-            return "无效的Token";
+            return "注销成功";
         }
 
         String jwtToken = token.substring(7);
-
-        // 校验 Token
-        if (!JwtUtils.validateToken(jwtToken)) {
-            return "Token校验失败";
-        }
-
-        redisUtil.delete("login:user:" + token);
+        redisUtil.delete("login:user:" + jwtToken);
         return "注销成功";
     }
 }

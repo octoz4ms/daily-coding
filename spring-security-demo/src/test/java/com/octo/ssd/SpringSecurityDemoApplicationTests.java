@@ -3,6 +3,7 @@ package com.octo.ssd;
 import com.octo.ssd.security.JwtUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -11,6 +12,9 @@ class SpringSecurityDemoApplicationTests {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Value("${jwt.access-expire}")
+    public static int ACCESS_EXPIRE = 30000;
 
     @Test
     void contextLoads() {
@@ -24,6 +28,11 @@ class SpringSecurityDemoApplicationTests {
     void contextLoads2() {
         String token = JwtUtils.generateToken("zms");
         System.out.println(token);
+    }
+
+    @Test
+    void contextLoads3() {
+        System.out.println(ACCESS_EXPIRE);
     }
 
 }

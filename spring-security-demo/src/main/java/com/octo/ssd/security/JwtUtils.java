@@ -1,8 +1,13 @@
 package com.octo.ssd.security;
 
+import com.octo.ssd.config.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
@@ -10,19 +15,29 @@ import java.util.Date;
 import java.util.UUID;
 
 
+@Slf4j
+@Component
 public class JwtUtils {
 
-    private static final String SECRET = "secretKeyNotTellingYouSecretKeyNotTellingYou";
+    private static SecretKey KEY;
 
-    private static final SecretKey KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
+    private static String ISSUER;
 
-    private static final String TOKEN_PREFIX = "Bearer ";
+    private static String SUBJECT;
 
-    private static final String JWT_ISS = "zms";
+    private static int ACCESS_EXPIRE;
 
-    private final static String SUBJECT = "Peripherals";
+    @Resource
+    private JwtProperties jwtProperties;
 
-    public static final int ACCESS_EXPIRE = 60000;
+    // 配置文件信息 赋值 静态字段
+    @PostConstruct
+    public void init() {
+        KEY = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
+        ISSUER = jwtProperties.getIssuer();
+        SUBJECT = jwtProperties.getSubject();
+        ACCESS_EXPIRE = jwtProperties.getAccessExpire();
+    }
 
     /**
      * 创建token
@@ -32,7 +47,7 @@ public class JwtUtils {
      */
     public static String generateToken(String username) {
         Date now = new Date();
-        Date exprireDate = Date.from(Instant.now().plusSeconds(ACCESS_EXPIRE));
+        Date exprireDate = Date.from(Instant.now().plusMillis(ACCESS_EXPIRE));
         String uuid = UUID.randomUUID().toString();
         return Jwts.builder()
                 .header()
@@ -50,7 +65,7 @@ public class JwtUtils {
                 // 主题
                 .subject(SUBJECT)
                 // 签发者
-                .issuer(JWT_ISS)
+                .issuer(ISSUER)
                 // 签名
                 .signWith(KEY, Jwts.SIG.HS256)
                 .compact();
@@ -61,7 +76,7 @@ public class JwtUtils {
             Jwts.parser().verifyWith(KEY).build().parseSignedClaims(token).getPayload();
             return true;
         } catch (Exception e) {
-            System.out.println(e);
+            log.error("e: ", e);
         }
         return false;
     }
@@ -70,6 +85,5 @@ public class JwtUtils {
         Claims claims = Jwts.parser().verifyWith(KEY).build().parseSignedClaims(token).getPayload();
         return (String) claims.get("username");
     }
-
 
 }

@@ -41,3 +41,8 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 
+jwt:
+  access-expire: 1800000  # 30分钟，单位毫秒
+  secret: secretKeyNotTellingYouSecretKeyNotTellingYou
+  issuer: zms
+  subject: Peripherals

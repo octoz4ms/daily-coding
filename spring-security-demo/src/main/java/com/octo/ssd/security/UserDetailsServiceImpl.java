@@ -34,7 +34,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .eq(User::getUsername, username);
         User user = userService.getOne(queryWrapper);
         if (user == null) {
-            throw new UsernameNotFoundException("User not found with username: " + username);
+            throw new UsernameNotFoundException("该用户不存在！");
         }
 
         // 查询用户角色
