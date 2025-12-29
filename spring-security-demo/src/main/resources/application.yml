@@ -36,9 +36,13 @@ server:
 
 
 mybatis-plus:
+  # Mapper XML文件位置
+  mapper-locations: classpath*:/mapper/**/*.xml
   configuration:
     # 如果项目无日志框架，可以考虑指定为 org.apache.ibatis.logging.stdout.StdOutImpl (请勿在实际生产中使用).
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 开启驼峰命名转换
+    map-underscore-to-camel-case: true
 
 
 jwt:

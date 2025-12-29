@@ -1,16 +1,45 @@
+server:
+  port: 8080
+
 spring:
   rabbitmq:
     host: 111.229.106.212
     port: 5672
     username: guest
     password: guest
+    # ==================== 生产者可靠性配置 ====================
+    # 开启发布确认模式
+    publisher-confirm-type: correlated
+    # 开启发布退回
+    publisher-returns: true
+    # 消息强制路由（无法路由时触发回调）
+    template:
+      mandatory: true
+    # ==================== 消费者可靠性配置 ====================
     listener:
       simple:
-        acknowledge-mode: auto
+        # 手动确认模式
+        acknowledge-mode: manual
+        # 消费者预取数量（限流）
+        prefetch: 10
+        # 自动重试配置
         retry:
           enabled: true
           initial-interval: 1s
           multiplier: 2
-          max-attempts: 5
-          max-interval: 50s
+          max-attempts: 3
+          max-interval: 10s
+        # 消费失败默认拒绝重新入队
+        default-requeue-rejected: false
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+
+# ==================== 日志配置 ====================
+logging:
+  level:
+    com.octo.rc.rabbitmq: DEBUG
+    org.springframework.amqp: INFO
 
