@@ -1,0 +1,13 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: provider-service
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.octo.demo: DEBUG
+

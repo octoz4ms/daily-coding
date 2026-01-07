@@ -48,3 +48,5 @@ public class SeckillMessage implements Serializable {
 
 
 
+
+

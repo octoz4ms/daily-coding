@@ -1,0 +1,36 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: consumer-service
+
+# 服务提供者地址配置
+provider:
+  service:
+    url: http://localhost:8081
+
+# Feign 配置
+spring.cloud.openfeign:
+  # 启用降级
+  circuitbreaker:
+    enabled: true
+  # 超时配置
+  client:
+    config:
+      default:
+        # 连接超时时间
+        connectTimeout: 5000
+        # 读取超时时间
+        readTimeout: 5000
+        # 日志级别: NONE, BASIC, HEADERS, FULL
+        loggerLevel: BASIC
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.octo.demo: DEBUG
+    # Feign 日志
+    com.octo.demo.common.client: DEBUG
+
