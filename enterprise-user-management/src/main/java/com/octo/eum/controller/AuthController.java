@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 /**
  * 认证控制器
  *
@@ -34,7 +36,7 @@ public class AuthController {
     public Result<LoginResponse> login(@Valid @RequestBody LoginRequest request,
                                         HttpServletRequest httpRequest) {
         String ip = IpUtils.getClientIp(httpRequest);
-        LoginResponse response = authService.login(request, ip);
+        LoginResponse response = authService.login(request, ip, httpRequest);
         return Result.success(response);
     }
 
@@ -51,9 +53,37 @@ public class AuthController {
      * 刷新Token
      */
     @PostMapping("/refresh")
-    public Result<LoginResponse> refreshToken(@RequestHeader("X-Refresh-Token") String refreshToken) {
-        LoginResponse response = authService.refreshToken(refreshToken);
+    public Result<LoginResponse> refreshToken(@RequestHeader("X-Refresh-Token") String refreshToken,
+                                             HttpServletRequest request) {
+        LoginResponse response = authService.refreshToken(refreshToken, request);
         return Result.success(response);
+    }
+
+    /**
+     * 自动刷新Access Token（前端定时调用）
+     */
+    @PostMapping("/auto-refresh")
+    public Result<LoginResponse> autoRefreshToken(@RequestHeader("Authorization") String accessToken,
+                                                 HttpServletRequest request) {
+        // 去掉Bearer前缀
+        if (accessToken.startsWith("Bearer ")) {
+            accessToken = accessToken.substring(7);
+        }
+        LoginResponse response = authService.autoRefreshToken(accessToken, request);
+        return Result.success(response);
+    }
+
+    /**
+     * 检查Token状态
+     */
+    @GetMapping("/token-status")
+    public Result<Map<String, Object>> checkTokenStatus(@RequestHeader("Authorization") String accessToken) {
+        // 去掉Bearer前缀
+        if (accessToken.startsWith("Bearer ")) {
+            accessToken = accessToken.substring(7);
+        }
+        Map<String, Object> status = authService.checkTokenStatus(accessToken);
+        return Result.success(status);
     }
 
     /**

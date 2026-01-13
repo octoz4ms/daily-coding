@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.time.LocalDate;
@@ -53,6 +54,30 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         converters.add(0, new MappingJackson2HttpMessageConverter(objectMapper()));
+    }
+
+    /**
+     * 异步任务执行器 - 用于Token异步刷新等操作
+     */
+    @Bean(name = "asyncTaskExecutor")
+    public ThreadPoolTaskExecutor asyncTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        // 核心线程数
+        executor.setCorePoolSize(4);
+        // 最大线程数
+        executor.setMaxPoolSize(8);
+        // 队列容量
+        executor.setQueueCapacity(100);
+        // 线程名前缀
+        executor.setThreadNamePrefix("async-token-");
+        // 拒绝策略：调用者运行
+        executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
+        // 等待任务完成再关闭
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        // 等待时间
+        executor.setAwaitTerminationSeconds(60);
+        executor.initialize();
+        return executor;
     }
 }
 

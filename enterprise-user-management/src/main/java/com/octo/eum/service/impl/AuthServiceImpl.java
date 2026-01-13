@@ -7,12 +7,15 @@ import com.octo.eum.dto.response.UserVO;
 import com.octo.eum.entity.LoginLog;
 import com.octo.eum.exception.BusinessException;
 import com.octo.eum.security.JwtAuthenticationFilter;
+import com.octo.eum.security.JwtProperties;
 import com.octo.eum.security.JwtTokenProvider;
 import com.octo.eum.security.LoginUser;
 import com.octo.eum.security.SecurityUtils;
+import com.octo.eum.security.TokenFingerprintUtils;
 import com.octo.eum.service.AuthService;
 import com.octo.eum.service.LoginLogService;
 import com.octo.eum.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -24,6 +27,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -38,12 +44,19 @@ public class AuthServiceImpl implements AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtProperties jwtProperties;
     private final RedisTemplate<String, Object> redisTemplate;
     private final UserService userService;
     private final LoginLogService loginLogService;
+    private final TokenFingerprintUtils fingerprintUtils;
 
     @Override
     public LoginResponse login(LoginRequest request, String ip) {
+        return login(request, ip, null);
+    }
+
+    @Override
+    public LoginResponse login(LoginRequest request, String ip, HttpServletRequest httpRequest) {
         LoginLog loginLog = new LoginLog();
         loginLog.setUsername(request.getUsername());
         loginLog.setType(1); // 登录
@@ -62,9 +75,19 @@ public class AuthServiceImpl implements AuthService {
             // 获取登录用户
             LoginUser loginUser = (LoginUser) authentication.getPrincipal();
 
-            // 生成Token
-            String accessToken = jwtTokenProvider.generateAccessToken(loginUser);
-            String refreshToken = jwtTokenProvider.generateRefreshToken(loginUser);
+            // 生成Token（带指纹）
+            String fingerprint = null;
+            if (jwtProperties.getEnableFingerprint() && httpRequest != null) {
+                fingerprint = fingerprintUtils.generateFingerprint(httpRequest);
+            }
+
+            String accessToken = jwtTokenProvider.generateAccessToken(loginUser, httpRequest, fingerprint);
+            String refreshToken = jwtTokenProvider.generateRefreshToken(loginUser, httpRequest, fingerprint);
+
+            // 单设备登录处理
+            if (jwtProperties.getSingleDeviceLogin()) {
+                invalidateOtherDevices(loginUser.getUserId());
+            }
 
             // 保存Token到Redis
             saveTokenToRedis(loginUser.getUserId(), accessToken);
@@ -139,14 +162,20 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginResponse refreshToken(String refreshToken) {
+    public LoginResponse refreshToken(String refreshToken, HttpServletRequest request) {
         // 验证刷新Token
         if (!jwtTokenProvider.validateToken(refreshToken)) {
             throw new BusinessException(ResultCode.REFRESH_TOKEN_INVALID);
         }
 
-        // 获取用户名
+        // 验证Token版本
+        if (!jwtTokenProvider.validateTokenVersion(refreshToken)) {
+            throw new BusinessException(ResultCode.REFRESH_TOKEN_INVALID);
+        }
+
+        // 获取用户名和用户ID
         String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
+        Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
 
         // 获取用户信息
         UserVO userVO = userService.getUserByUsername(username);
@@ -154,17 +183,141 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
 
-        // 创建一个简单的LoginUser对象用于生成新Token
+        // 验证指纹（如果启用）
+        if (jwtProperties.getEnableFingerprint() && request != null) {
+            String storedFingerprint = jwtTokenProvider.getFingerprintFromToken(refreshToken);
+            if (!fingerprintUtils.validateFingerprint(request, storedFingerprint)) {
+                throw new BusinessException(ResultCode.REFRESH_TOKEN_INVALID);
+            }
+        }
+
+        // 并发刷新保护
+        String refreshLockKey = "refresh:lock:" + userId;
+        boolean lockAcquired = false;
+        try {
+            if (jwtProperties.getEnableConcurrentRefreshProtection()) {
+                lockAcquired = Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(refreshLockKey, "1",
+                    jwtProperties.getRefreshLockTimeout(), TimeUnit.SECONDS));
+                if (!lockAcquired) {
+                    throw new BusinessException(ResultCode.TOKEN_REFRESH_IN_PROGRESS);
+                }
+            }
+
+            // 创建LoginUser对象用于生成新Token
+            LoginUser loginUser = SecurityUtils.getRequiredCurrentUser();
+
+            // 生成新Token（带指纹）
+            String fingerprint = null;
+            if (jwtProperties.getEnableFingerprint() && request != null) {
+                fingerprint = fingerprintUtils.generateFingerprint(request);
+            }
+
+            String newAccessToken = jwtTokenProvider.generateAccessToken(loginUser, request, fingerprint);
+            String newRefreshToken = jwtTokenProvider.generateRefreshToken(loginUser, request, fingerprint);
+
+            // 保存新Token到Redis
+            saveTokenToRedis(loginUser.getUserId(), newAccessToken);
+
+            return buildLoginResponse(loginUser, newAccessToken, newRefreshToken);
+        } finally {
+            if (lockAcquired) {
+                redisTemplate.delete(refreshLockKey);
+            }
+        }
+    }
+
+    @Override
+    public LoginResponse autoRefreshToken(String accessToken, HttpServletRequest request) {
+        // 验证Token
+        if (!jwtTokenProvider.validateToken(accessToken)) {
+            throw new BusinessException(ResultCode.ACCESS_TOKEN_INVALID);
+        }
+
+        // 验证版本
+        if (!jwtTokenProvider.validateTokenVersion(accessToken)) {
+            throw new BusinessException(ResultCode.ACCESS_TOKEN_INVALID);
+        }
+
+        // 验证续签次数
+        if (!jwtTokenProvider.validateRefreshCount(accessToken)) {
+            throw new BusinessException(ResultCode.TOKEN_REFRESH_LIMIT_EXCEEDED);
+        }
+
+        // 验证指纹
+        if (jwtProperties.getEnableFingerprint()) {
+            String storedFingerprint = jwtTokenProvider.getFingerprintFromToken(accessToken);
+            if (!fingerprintUtils.validateFingerprint(request, storedFingerprint)) {
+                throw new BusinessException(ResultCode.ACCESS_TOKEN_INVALID);
+            }
+        }
+
+        // 获取当前用户
         LoginUser loginUser = SecurityUtils.getRequiredCurrentUser();
 
-        // 生成新Token
-        String newAccessToken = jwtTokenProvider.generateAccessToken(loginUser);
-        String newRefreshToken = jwtTokenProvider.generateRefreshToken(loginUser);
+        // 并发刷新保护
+        String refreshLockKey = "auto_refresh:lock:" + loginUser.getUserId();
+        boolean lockAcquired = false;
+        try {
+            if (jwtProperties.getEnableConcurrentRefreshProtection()) {
+                lockAcquired = Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(refreshLockKey, "1",
+                    jwtProperties.getRefreshLockTimeout(), TimeUnit.SECONDS));
+                if (!lockAcquired) {
+                    throw new BusinessException(ResultCode.TOKEN_REFRESH_IN_PROGRESS);
+                }
+            }
 
-        // 保存新Token到Redis
-        saveTokenToRedis(loginUser.getUserId(), newAccessToken);
+            // 生成新的Access Token
+            String fingerprint = jwtProperties.getEnableFingerprint() ? fingerprintUtils.generateFingerprint(request) : null;
+            String newAccessToken = jwtTokenProvider.createRefreshedToken(accessToken, loginUser, request, fingerprint);
 
-        return buildLoginResponse(loginUser, newAccessToken, newRefreshToken);
+            // 保存新Token到Redis
+            saveTokenToRedis(loginUser.getUserId(), newAccessToken);
+
+            return buildLoginResponse(loginUser, newAccessToken, null);
+        } finally {
+            if (lockAcquired) {
+                redisTemplate.delete(refreshLockKey);
+            }
+        }
+    }
+
+    @Override
+    public Map<String, Object> checkTokenStatus(String accessToken) {
+        Map<String, Object> status = new HashMap<>();
+
+        try {
+            // 基础验证
+            boolean isValid = jwtTokenProvider.validateToken(accessToken);
+            status.put("valid", isValid);
+
+            if (isValid) {
+                // 剩余时间
+                long remainingTime = jwtTokenProvider.getTokenRemainingTime(accessToken);
+                status.put("remainingTime", remainingTime);
+
+                // 是否需要刷新
+                boolean shouldRefresh = jwtTokenProvider.shouldRefreshToken(accessToken);
+                status.put("shouldRefresh", shouldRefresh);
+
+                // 续签次数
+                int refreshCount = jwtTokenProvider.getRefreshCountFromToken(accessToken);
+                status.put("refreshCount", refreshCount);
+
+                // 版本信息
+                int version = jwtTokenProvider.getTokenVersionFromToken(accessToken);
+                status.put("version", version);
+                status.put("currentVersion", jwtProperties.getTokenVersion());
+                status.put("versionValid", version == jwtProperties.getTokenVersion());
+
+                // 过期时间
+                status.put("expiresAt", jwtTokenProvider.getExpirationDateFromToken(accessToken).getTime());
+            }
+        } catch (Exception e) {
+            status.put("valid", false);
+            status.put("error", e.getMessage());
+        }
+
+        return status;
     }
 
     @Override
@@ -187,6 +340,44 @@ public class AuthServiceImpl implements AuthService {
         redisTemplate.opsForValue().set(key, token,
                 jwtTokenProvider.getAccessTokenExpiration(), TimeUnit.SECONDS);
     }
+
+    /**
+     * 单设备登录：使其他设备Token失效
+     */
+    private void invalidateOtherDevices(Long userId) {
+        // 获取当前设备标识（可以基于指纹或其他方式）
+        String currentDeviceKey = "device:" + userId + ":current";
+
+        // 生成新的设备标识
+        String deviceId = generateDeviceId();
+
+        // 将旧的Token加入黑名单
+        String tokenKey = JwtAuthenticationFilter.getTokenKey(userId);
+        String existingToken = (String) redisTemplate.opsForValue().get(tokenKey);
+
+        if (existingToken != null) {
+            // 将现有Token加入黑名单，剩余时间作为黑名单过期时间
+            long remainingTime = jwtTokenProvider.getTokenRemainingTime(existingToken);
+            if (remainingTime > 0) {
+                String blacklistKey = JwtAuthenticationFilter.getBlacklistKey(existingToken);
+                redisTemplate.opsForValue().set(blacklistKey, deviceId, remainingTime, TimeUnit.SECONDS);
+            }
+        }
+
+        // 更新当前设备标识
+        redisTemplate.opsForValue().set(currentDeviceKey, deviceId, jwtProperties.getRefreshTokenExpiration(), TimeUnit.SECONDS);
+
+        // 记录设备切换日志
+        log.info("用户{}切换设备登录，原Token已失效", userId);
+    }
+
+    /**
+     * 生成设备ID
+     */
+    private String generateDeviceId() {
+        return String.valueOf(System.currentTimeMillis()) + "-" + String.valueOf(Math.random()).substring(2, 8);
+    }
+
 
     /**
      * 构建登录响应
