@@ -60,25 +60,10 @@ public class AuthController {
     }
 
     /**
-     * 自动刷新Access Token（前端定时调用）
-     */
-    @PostMapping("/auto-refresh")
-    public Result<LoginResponse> autoRefreshToken(@RequestHeader("Authorization") String accessToken,
-                                                 HttpServletRequest request) {
-        // 去掉Bearer前缀
-        if (accessToken.startsWith("Bearer ")) {
-            accessToken = accessToken.substring(7);
-        }
-        LoginResponse response = authService.autoRefreshToken(accessToken, request);
-        return Result.success(response);
-    }
-
-    /**
      * 检查Token状态
      */
     @GetMapping("/token-status")
     public Result<Map<String, Object>> checkTokenStatus(@RequestHeader("Authorization") String accessToken) {
-        // 去掉Bearer前缀
         if (accessToken.startsWith("Bearer ")) {
             accessToken = accessToken.substring(7);
         }
@@ -95,4 +80,3 @@ public class AuthController {
         return Result.success(response);
     }
 }
-

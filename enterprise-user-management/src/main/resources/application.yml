@@ -80,22 +80,17 @@ mybatis-plus:
     cache-enabled: false
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
-# JWT配置 - 大厂级Token管理策略
+# JWT配置
 jwt:
   secret: your-256-bit-secret-key-must-be-at-least-32-characters-long-for-production
-  access-token-expiration: 900  # 15分钟 - 提高安全性
-  refresh-token-expiration: 2592000  # 30天 - 支持长期会话
+  access-token-expiration: 900       # 15分钟
+  refresh-token-expiration: 604800   # 7天
   token-prefix: "Bearer "
   header: Authorization
   issuer: enterprise-user-management
-  auto-refresh-threshold: 300  # 5分钟前自动刷新
-  single-device-login: false  # 可配置单设备登录
-  enable-fingerprint: true  # 启用指纹校验
-  enable-sliding-refresh: true  # 启用滑动窗口续签
-  max-refresh-count: 10  # 最大续签次数
-  token-version: 1  # Token版本控制
-  enable-concurrent-refresh-protection: true  # 并发刷新保护
-  refresh-lock-timeout: 30  # 刷新锁超时时间
+  token-version: 1                   # Token版本，修改密码时递增
+  # 登录策略：MULTI(多端在线) | SINGLE(单设备) | SAME_TYPE_KICK(同类型互踢)
+  login-policy: SAME_TYPE_KICK
 
 # 日志配置
 logging:
@@ -105,4 +100,3 @@ logging:
     org.springframework.security: debug
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
-

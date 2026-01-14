@@ -23,11 +23,11 @@ public interface AuthService {
     LoginResponse login(LoginRequest request, String ip);
 
     /**
-     * 用户登录（带指纹）
+     * 用户登录
      *
      * @param request     登录请求
      * @param ip          登录IP
-     * @param httpRequest HTTP请求（用于生成指纹）
+     * @param httpRequest HTTP请求
      * @return 登录响应
      */
     LoginResponse login(LoginRequest request, String ip, HttpServletRequest httpRequest);
@@ -72,4 +72,3 @@ public interface AuthService {
      */
     LoginResponse getCurrentUserInfo();
 }
-

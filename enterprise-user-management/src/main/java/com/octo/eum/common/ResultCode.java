@@ -48,14 +48,9 @@ public enum ResultCode {
     TOKEN_INVALID(3001, "Token无效"),
     TOKEN_EXPIRED(3002, "Token已过期"),
     TOKEN_REQUIRED(3003, "请提供Token"),
-    REFRESH_TOKEN_INVALID(3004, "RefreshToken无效"),
-    REFRESH_TOKEN_EXPIRED(3005, "RefreshToken已过期"),
-    ACCESS_TOKEN_INVALID(3006, "AccessToken无效"),
-    TOKEN_REFRESH_LIMIT_EXCEEDED(3007, "Token续签次数已达上限"),
-    TOKEN_REFRESH_IN_PROGRESS(3008, "Token正在刷新中，请稍后重试"),
-    TOKEN_FINGERPRINT_MISMATCH(3009, "Token指纹不匹配，疑似被盗用");
+    REFRESH_TOKEN_INVALID(3004, "RefreshToken无效或已使用"),
+    ACCESS_TOKEN_INVALID(3006, "AccessToken无效");
 
     private final int code;
     private final String message;
 }
-
