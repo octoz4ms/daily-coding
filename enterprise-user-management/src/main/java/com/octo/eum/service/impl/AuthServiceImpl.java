@@ -213,10 +213,15 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 保存Token到Redis
+     * 保存Token到Redis（用于踢人功能）
      */
     private void saveTokensToRedis(Long userId, DeviceType deviceType, String accessToken, String refreshToken) {
         LoginPolicy policy = jwtProperties.getLoginPolicy();
+
+        // 多端在线：不需要存储（不踢人，无需知道旧Token）
+        if (policy == LoginPolicy.MULTI) {
+            return;
+        }
 
         String tokenKey;
         String refreshKey;
@@ -226,7 +231,7 @@ public class AuthServiceImpl implements AuthService {
             tokenKey = JwtAuthenticationFilter.getTokenKey(userId, deviceType);
             refreshKey = JwtAuthenticationFilter.getRefreshTokenKey(userId, deviceType);
         } else {
-            // 单设备或多端：按用户存储（多端时仅用于设备管理，不用于验证）
+            // 单设备登录：按用户存储
             tokenKey = JwtAuthenticationFilter.getTokenKey(userId);
             refreshKey = JwtAuthenticationFilter.getRefreshTokenKey(userId);
         }
@@ -341,13 +346,16 @@ public class AuthServiceImpl implements AuthService {
         // 生成新的Access Token
         String newAccessToken = jwtTokenProvider.generateAccessToken(loginUser);
 
-        // 更新Redis中的Access Token
-        String tokenKey = jwtProperties.getLoginPolicy() == LoginPolicy.SAME_TYPE_KICK ?
-                JwtAuthenticationFilter.getTokenKey(loginUser.getUserId(), deviceType) :
-                JwtAuthenticationFilter.getTokenKey(loginUser.getUserId());
+        // 更新Redis中的Access Token（多端在线不存储）
+        LoginPolicy policy = jwtProperties.getLoginPolicy();
+        if (policy != LoginPolicy.MULTI) {
+            String tokenKey = policy == LoginPolicy.SAME_TYPE_KICK ?
+                    JwtAuthenticationFilter.getTokenKey(loginUser.getUserId(), deviceType) :
+                    JwtAuthenticationFilter.getTokenKey(loginUser.getUserId());
 
-        redisTemplate.opsForValue().set(tokenKey, newAccessToken,
-                jwtTokenProvider.getAccessTokenExpiration(), TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(tokenKey, newAccessToken,
+                    jwtTokenProvider.getAccessTokenExpiration(), TimeUnit.SECONDS);
+        }
 
         return buildLoginResponse(loginUser, newAccessToken, null);
     }
