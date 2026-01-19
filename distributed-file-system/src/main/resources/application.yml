@@ -1,0 +1,63 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: distributed-file-system
+  
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  
+  # 数据源配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/file_system_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      database: 2
+      timeout: 3000ms
+
+# MyBatis Plus配置
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+
+# MinIO配置
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket-name: files
+
+# 文件上传配置
+file:
+  upload:
+    # 分片大小（5MB）
+    chunk-size: 5242880
+    # 临时文件目录
+    temp-dir: ./temp/chunks
+    # 分片过期时间（小时）
+    chunk-expire-hours: 24
+    # 支持的文件类型
+    allowed-types: jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar,mp4,mp3
+    # 最大文件大小（GB）
+    max-file-size-gb: 10
+
+logging:
+  level:
+    com.octo.file: DEBUG
+

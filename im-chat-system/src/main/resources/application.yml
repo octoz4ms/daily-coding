@@ -1,0 +1,71 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: im-chat-system
+  
+  # 数据源配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/im_chat_db?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      database: 1
+      timeout: 3000ms
+  
+  # RabbitMQ配置
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 10
+
+# MyBatis Plus配置
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+
+# Netty WebSocket配置
+netty:
+  websocket:
+    port: 9000
+    boss-threads: 1
+    worker-threads: 8
+    path: /ws
+
+# IM配置
+im:
+  message:
+    # 消息重试配置
+    max-retry: 3
+    retry-interval: 5000
+    # 消息过期时间(天)
+    expire-days: 30
+  # 已读状态缓存前缀
+  read-status-prefix: "im:read:"
+  # 在线用户缓存前缀  
+  online-prefix: "im:online:"
+
+logging:
+  level:
+    com.octo.im: DEBUG
+
