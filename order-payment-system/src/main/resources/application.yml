@@ -1,0 +1,103 @@
+server:
+  port: 8089
+
+spring:
+  application:
+    name: order-payment-system
+
+  # MySQL数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://115.190.171.200:3306/order_payment?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    # HikariCP连接池配置
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      pool-name: OrderPaymentHikariCP
+
+  # Redis配置
+  redis:
+    host: 115.190.171.200
+    port: 6379
+    password: 123456
+    database: 0
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+
+  # RabbitMQ配置
+  rabbitmq:
+    host: 115.190.171.200
+    port: 5672
+    username: admin
+    password: admin
+    virtual-host: /
+    # 发布确认
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    listener:
+      simple:
+        # 手动确认
+        acknowledge-mode: manual
+        prefetch: 1
+        retry:
+          enabled: true
+          max-attempts: 3
+
+# MyBatis Plus配置
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.example.payment.entity
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 订单配置
+order:
+  # 订单超时时间（分钟）
+  timeout-minutes: 30
+  # 订单号前缀
+  prefix: "ORD"
+
+# 支付配置
+payment:
+  # 支付单超时时间（分钟）
+  timeout-minutes: 30
+  # 支付单号前缀
+  prefix: "PAY"
+  
+  # 微信支付配置（需要替换为真实值）
+  wechat:
+    app-id: your_app_id
+    mch-id: your_mch_id
+    api-key: your_api_key
+    notify-url: http://your-domain.com/api/payment/callback/wechat
+  
+  # 支付宝配置（需要替换为真实值）
+  alipay:
+    app-id: your_app_id
+    private-key: your_private_key
+    public-key: alipay_public_key
+    notify-url: http://your-domain.com/api/payment/callback/alipay
+
+# 日志配置
+logging:
+  level:
+    com.example.payment: debug
+    org.springframework.amqp: info
+
