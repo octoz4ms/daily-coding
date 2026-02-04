@@ -17,10 +17,9 @@ import java.util.Map;
  * JWT Token工具
  * 
  * Access Token 结构:
- * - userId
- * - clientType
- * - tokenId (核心，用于Redis校验)
- * - ver (Token版本)
+ * - uid: userId
+ * - sid: sessionId (核心，用于Redis校验)
+ * - dt: deviceType
  *
  * @author octo
  */
@@ -43,14 +42,17 @@ public class JwtTokenProvider {
 
     /**
      * 生成 Access Token
+     *
+     * @param userId     用户ID
+     * @param username   用户名（作为subject）
+     * @param sessionId  会话ID（核心，用于验证）
+     * @param deviceType 设备类型
      */
-    public String generateAccessToken(Long userId, String username, ClientType clientType, 
-                                       String tokenId, int tokenVer) {
+    public String generateAccessToken(Long userId, String username, String sessionId, ClientType deviceType) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("uid", userId);
-        claims.put("ct", clientType.getCode());
-        claims.put("tid", tokenId);
-        claims.put("ver", tokenVer);
+        claims.put("sid", sessionId);
+        claims.put("dt", deviceType.getCode());
 
         return buildToken(claims, username, jwtProperties.getAccessTokenExpiration());
     }
@@ -107,29 +109,18 @@ public class JwtTokenProvider {
     }
 
     /**
-     * 获取客户端类型
+     * 获取会话ID
      */
-    public ClientType getClientType(String token) {
-        String ct = (String) getClaims(token).get("ct");
-        return ClientType.fromCode(ct);
+    public String getSessionId(String token) {
+        return (String) getClaims(token).get("sid");
     }
 
     /**
-     * 获取TokenId
+     * 获取设备类型
      */
-    public String getTokenId(String token) {
-        return (String) getClaims(token).get("tid");
-    }
-
-    /**
-     * 获取Token版本
-     */
-    public int getTokenVersion(String token) {
-        Object ver = getClaims(token).get("ver");
-        if (ver instanceof Integer) {
-            return (Integer) ver;
-        }
-        return ((Long) ver).intValue();
+    public ClientType getDeviceType(String token) {
+        String dt = (String) getClaims(token).get("dt");
+        return ClientType.fromCode(dt);
     }
 
     /**
@@ -146,6 +137,10 @@ public class JwtTokenProvider {
 
     public Long getAccessTokenExpiration() {
         return jwtProperties.getAccessTokenExpiration();
+    }
+
+    public Long getRefreshTokenExpiration() {
+        return jwtProperties.getRefreshTokenExpiration();
     }
 
     private Claims getClaims(String token) {

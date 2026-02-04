@@ -39,6 +39,13 @@ public class JwtProperties {
      * - MULTI: 多端共存
      * - SINGLE: 单设备
      * - SAME_TYPE_KICK: 同端互踢（推荐）
+     * - MAX_DEVICE: 最大设备数限制
      */
     private LoginPolicy loginPolicy = LoginPolicy.SAME_TYPE_KICK;
+
+    /**
+     * 最大设备数（仅 MAX_DEVICE 策略生效）
+     * 默认5个设备
+     */
+    private Integer maxDeviceCount = 5;
 }

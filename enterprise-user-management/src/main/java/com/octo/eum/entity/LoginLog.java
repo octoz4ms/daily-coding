@@ -41,9 +41,19 @@ public class LoginLog implements Serializable {
     private Integer type;
 
     /**
+     * 会话ID
+     */
+    private String sessionId;
+
+    /**
      * 客户端类型 pc/mobile/tablet/mini
      */
     private String clientType;
+
+    /**
+     * 设备名称
+     */
+    private String deviceName;
 
     /**
      * 登录IP

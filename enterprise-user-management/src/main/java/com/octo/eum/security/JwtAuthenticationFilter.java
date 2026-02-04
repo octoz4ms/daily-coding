@@ -1,6 +1,6 @@
 package com.octo.eum.security;
 
-import com.octo.eum.service.LoginTokenService;
+import com.octo.eum.service.SessionService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,13 +19,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * JWT认证过滤器
- * 
+ * JWT认证过滤器 - 新方案
+ *
  * 校验流程：
- * 1. JWT验签 + exp
- * 2. 取 uid / ct / tokenId / ver
- * 3. Redis校验 login:{uid}:{ct} == tokenId
- * 4. 校验 token:ver（可选）
+ * 1. JWT验签 + 过期检查
+ * 2. 从JWT取 sessionId
+ * 3. Redis校验 session:{sessionId} 是否存在（踢人生效点）
  *
  * @author octo
  */
@@ -36,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService userDetailsService;
-    private final LoginTokenService loginTokenService;
+    private final SessionService sessionService;
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
@@ -50,34 +49,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = getTokenFromRequest(request);
 
-            // 1. JWT验签 + exp
+            // 1. JWT验签 + 过期检查
             if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
-                
-                // 2. 取关键信息
-                Long userId = jwtTokenProvider.getUserId(token);
-                ClientType clientType = jwtTokenProvider.getClientType(token);
-                String tokenId = jwtTokenProvider.getTokenId(token);
-                int tokenVer = jwtTokenProvider.getTokenVersion(token);
 
-                // 3. Redis校验登录态（踢人生效点）
-                if (!loginTokenService.validateLogin(userId, clientType, tokenId)) {
-                    log.debug("登录态无效: uid={}, ct={}", userId, clientType.getCode());
+                // 2. 从JWT取 sessionId
+                String sessionId = jwtTokenProvider.getSessionId(token);
+
+                // 3. Redis校验会话是否有效（踢人生效点）
+                if (!sessionService.validateSession(sessionId)) {
+                    log.debug("会话已失效或被踢: sessionId={}", sessionId);
                     filterChain.doFilter(request, response);
                     return;
                 }
 
-                // 4. 校验Token版本（全量失效）
-                if (!loginTokenService.validateTokenVersion(userId, tokenVer)) {
-                    log.debug("Token版本过期: uid={}, ver={}", userId, tokenVer);
-                    filterChain.doFilter(request, response);
-                    return;
-                }
-
-                // 5. 加载用户信息
+                // 4. 加载用户信息
                 String username = jwtTokenProvider.getUsername(token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-                // 6. 设置认证
+                // 5. 设置认证
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,
@@ -87,7 +76,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                log.debug("认证成功: user={}, ct={}", username, clientType.getCode());
+                log.debug("认证成功: user={}, sessionId={}", username, sessionId);
             }
         } catch (Exception e) {
             log.debug("Token验证失败: {}", e.getMessage());

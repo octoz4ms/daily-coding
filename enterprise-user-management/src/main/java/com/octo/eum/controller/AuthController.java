@@ -7,7 +7,6 @@ import com.octo.eum.security.ClientType;
 import com.octo.eum.security.JwtTokenProvider;
 import com.octo.eum.security.LoginUser;
 import com.octo.eum.security.SecurityUtils;
-import com.octo.eum.service.LoginTokenService;
 import com.octo.eum.service.impl.AuthServiceImpl;
 import com.octo.eum.util.IpUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,10 +15,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- * 认证接口
+ * 认证接口 - 新方案
  *
  * @author octo
  */
@@ -29,7 +29,6 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthServiceImpl authService;
-    private final LoginTokenService loginTokenService;
     private final JwtTokenProvider jwtTokenProvider;
 
     /**
@@ -83,21 +82,53 @@ public class AuthController {
         return Result.success(status);
     }
 
-    // ==================== 踢人接口 ====================
+    // ==================== 会话管理接口 ====================
 
     /**
-     * 踢出当前用户的其他端
+     * 获取当前用户所有会话（设备列表）
      */
-    @PostMapping("/kick/{clientType}")
-    public Result<Void> kickClient(@PathVariable String clientType) {
+    @GetMapping("/sessions")
+    public Result<List<Map<String, Object>>> getSessions() {
         LoginUser loginUser = SecurityUtils.getRequiredCurrentUser();
-        ClientType ct = ClientType.fromCode(clientType);
-        boolean success = loginTokenService.kickOut(loginUser.getUserId(), ct);
-        return success ? Result.success() : Result.fail(400, "未找到该端登录");
+        List<Map<String, Object>> sessions = authService.getUserSessions(loginUser.getUserId());
+        return Result.success(sessions);
     }
 
     /**
-     * 踢出当前用户所有端（保留当前）
+     * 获取当前用户在线设备数
+     */
+    @GetMapping("/session-count")
+    public Result<Map<String, Object>> getSessionCount() {
+        LoginUser loginUser = SecurityUtils.getRequiredCurrentUser();
+        long count = authService.getUserSessionCount(loginUser.getUserId());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("count", count);
+        return Result.success(result);
+    }
+
+    /**
+     * 踢出指定会话
+     */
+    @PostMapping("/kick/{sessionId}")
+    public Result<Void> kickSession(@PathVariable String sessionId,
+                                     @RequestHeader("Authorization") String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        // 防止踢自己
+        String currentSessionId = jwtTokenProvider.getSessionId(token);
+        if (sessionId.equals(currentSessionId)) {
+            return Result.fail(400, "不能踢出当前会话");
+        }
+
+        boolean success = authService.kickSession(sessionId);
+        return success ? Result.success() : Result.fail(400, "会话不存在");
+    }
+
+    /**
+     * 踢出当前用户所有会话（保留当前）
      */
     @PostMapping("/kick-others")
     public Result<Map<String, Object>> kickOthers(@RequestHeader("Authorization") String token) {
@@ -106,12 +137,15 @@ public class AuthController {
         }
 
         LoginUser loginUser = SecurityUtils.getRequiredCurrentUser();
-        ClientType currentCt = jwtTokenProvider.getClientType(token);
+        String currentSessionId = jwtTokenProvider.getSessionId(token);
 
+        // 获取所有会话并踢出除当前外的
+        List<Map<String, Object>> sessions = authService.getUserSessions(loginUser.getUserId());
         int count = 0;
-        for (ClientType ct : ClientType.values()) {
-            if (ct != currentCt && ct != ClientType.UNKNOWN) {
-                if (loginTokenService.kickOut(loginUser.getUserId(), ct)) {
+        for (Map<String, Object> session : sessions) {
+            String sid = (String) session.get("sessionId");
+            if (!currentSessionId.equals(sid)) {
+                if (authService.kickSession(sid)) {
                     count++;
                 }
             }
@@ -119,7 +153,30 @@ public class AuthController {
 
         Map<String, Object> result = new HashMap<>();
         result.put("count", count);
-        result.put("message", "已踢出 " + count + " 个端");
+        result.put("message", "已踢出 " + count + " 个设备");
         return Result.success(result);
+    }
+
+    /**
+     * 踢出同类型设备
+     */
+    @PostMapping("/kick-same-type/{deviceType}")
+    public Result<Void> kickSameType(@PathVariable String deviceType,
+                                      @RequestHeader("Authorization") String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        LoginUser loginUser = SecurityUtils.getRequiredCurrentUser();
+        ClientType type = ClientType.fromCode(deviceType);
+        ClientType currentType = jwtTokenProvider.getDeviceType(token);
+
+        // 如果踢的是当前设备类型，提示需要用 kick-others
+        if (type == currentType) {
+            return Result.fail(400, "踢同类型设备会踢掉自己，请使用 kick-others");
+        }
+
+        authService.kickSameTypeSessions(loginUser.getUserId(), type);
+        return Result.success();
     }
 }

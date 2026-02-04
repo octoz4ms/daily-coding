@@ -57,8 +57,12 @@ public class LoginResponse implements Serializable {
     private List<String> roles;
 
     /**
-     * 客户端类型
+     * 会话ID（用于设备管理）
      */
-    private String clientType;
-}
+    private String sessionId;
 
+    /**
+     * 设备类型
+     */
+    private String deviceType;
+}
