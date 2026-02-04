@@ -1,12 +1,12 @@
 package com.octo.eum.security;
 
+import com.octo.eum.service.LoginTokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +20,12 @@ import java.io.IOException;
 
 /**
  * JWT认证过滤器
+ * 
+ * 校验流程：
+ * 1. JWT验签 + exp
+ * 2. 取 uid / ct / tokenId / ver
+ * 3. Redis校验 login:{uid}:{ct} == tokenId
+ * 4. 校验 token:ver（可选）
  *
  * @author octo
  */
@@ -29,16 +35,11 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final JwtProperties jwtProperties;
     private final CustomUserDetailsService userDetailsService;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final LoginTokenService loginTokenService;
 
-    /**
-     * Redis Key 前缀
-     */
-    private static final String TOKEN_PREFIX = "auth:token:";
-    private static final String TOKEN_BLACKLIST_PREFIX = "auth:blacklist:";
-    private static final String REFRESH_TOKEN_PREFIX = "auth:refresh:";
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
 
     @Override
     protected void doFilterInternal(
@@ -49,106 +50,57 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = getTokenFromRequest(request);
 
-            if (StringUtils.hasText(token)) {
-                // 检查Token是否在黑名单中
-                if (isTokenBlacklisted(token)) {
-                    log.debug("Token已被加入黑名单");
-                } else if (jwtTokenProvider.validateToken(token)) {
-                    // 验证Token版本
-                    if (!jwtTokenProvider.validateTokenVersion(token)) {
-                        log.warn("Token版本已过期，需要重新登录");
-                    } else {
-                        String username = jwtTokenProvider.getUsernameFromToken(token);
-                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            // 1. JWT验签 + exp
+            if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+                
+                // 2. 取关键信息
+                Long userId = jwtTokenProvider.getUserId(token);
+                ClientType clientType = jwtTokenProvider.getClientType(token);
+                String tokenId = jwtTokenProvider.getTokenId(token);
+                int tokenVer = jwtTokenProvider.getTokenVersion(token);
 
-                        if (jwtTokenProvider.validateToken(token, userDetails)) {
-                            UsernamePasswordAuthenticationToken authentication =
-                                    new UsernamePasswordAuthenticationToken(
-                                            userDetails,
-                                            null,
-                                            userDetails.getAuthorities()
-                                    );
-                            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                            SecurityContextHolder.getContext().setAuthentication(authentication);
-                            log.debug("用户认证成功: {}", username);
-                        }
-                    }
+                // 3. Redis校验登录态（踢人生效点）
+                if (!loginTokenService.validateLogin(userId, clientType, tokenId)) {
+                    log.debug("登录态无效: uid={}, ct={}", userId, clientType.getCode());
+                    filterChain.doFilter(request, response);
+                    return;
                 }
+
+                // 4. 校验Token版本（全量失效）
+                if (!loginTokenService.validateTokenVersion(userId, tokenVer)) {
+                    log.debug("Token版本过期: uid={}, ver={}", userId, tokenVer);
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
+                // 5. 加载用户信息
+                String username = jwtTokenProvider.getUsername(token);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                // 6. 设置认证
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                log.debug("认证成功: user={}, ct={}", username, clientType.getCode());
             }
         } catch (Exception e) {
-            log.error("无法设置用户认证: {}", e.getMessage());
+            log.debug("Token验证失败: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * 从请求中获取Token
-     */
     private String getTokenFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader(jwtProperties.getHeader());
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(jwtProperties.getTokenPrefix())) {
-            return bearerToken.substring(jwtProperties.getTokenPrefix().length());
+        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
+            return bearerToken.substring(BEARER_PREFIX.length());
         }
         return null;
-    }
-
-    /**
-     * 检查Token是否在黑名单中
-     */
-    private boolean isTokenBlacklisted(String token) {
-        String key = TOKEN_BLACKLIST_PREFIX + token;
-        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
-    }
-
-    // ==================== Redis Key 生成方法 ====================
-
-    /**
-     * 获取黑名单Key
-     */
-    public static String getBlacklistKey(String token) {
-        return TOKEN_BLACKLIST_PREFIX + token;
-    }
-
-    /**
-     * 获取Access Token Key（按用户+设备类型）
-     */
-    public static String getTokenKey(Long userId, DeviceType deviceType) {
-        return TOKEN_PREFIX + userId + ":" + deviceType.getCode();
-    }
-
-    /**
-     * 获取Access Token Key（单设备模式，不区分设备类型）
-     */
-    public static String getTokenKey(Long userId) {
-        return TOKEN_PREFIX + userId;
-    }
-
-    /**
-     * 获取Refresh Token Key（按用户+设备类型）
-     */
-    public static String getRefreshTokenKey(Long userId, DeviceType deviceType) {
-        return REFRESH_TOKEN_PREFIX + userId + ":" + deviceType.getCode();
-    }
-
-    /**
-     * 获取Refresh Token Key（单设备模式）
-     */
-    public static String getRefreshTokenKey(Long userId) {
-        return REFRESH_TOKEN_PREFIX + userId;
-    }
-
-    /**
-     * 获取Token Key前缀（用于模糊删除）
-     */
-    public static String getTokenKeyPrefix(Long userId) {
-        return TOKEN_PREFIX + userId;
-    }
-
-    /**
-     * 获取Refresh Token Key前缀（用于模糊删除）
-     */
-    public static String getRefreshTokenKeyPrefix(Long userId) {
-        return REFRESH_TOKEN_PREFIX + userId;
     }
 }

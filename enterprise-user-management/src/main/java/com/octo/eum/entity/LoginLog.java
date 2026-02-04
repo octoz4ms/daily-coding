@@ -36,9 +36,14 @@ public class LoginLog implements Serializable {
     private String username;
 
     /**
-     * 登录类型 1-登录 2-登出
+     * 登录类型 1-登录 2-登出 3-被踢出
      */
     private Integer type;
+
+    /**
+     * 客户端类型 pc/mobile/tablet/mini
+     */
+    private String clientType;
 
     /**
      * 登录IP
@@ -75,4 +80,3 @@ public class LoginLog implements Serializable {
      */
     private LocalDateTime loginTime;
 }
-

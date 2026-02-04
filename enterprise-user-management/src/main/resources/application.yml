@@ -12,7 +12,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://115.190.171.200:3306/eum_db?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: root
-    password: Shuai3198@
+    password: 123456
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -83,13 +83,13 @@ mybatis-plus:
 # JWT配置
 jwt:
   secret: your-256-bit-secret-key-must-be-at-least-32-characters-long-for-production
-  access-token-expiration: 900       # 15分钟
+  access-token-expiration: 1800      # 30分钟
   refresh-token-expiration: 604800   # 7天
-  token-prefix: "Bearer "
-  header: Authorization
   issuer: enterprise-user-management
-  token-version: 1                   # Token版本，修改密码时递增
-  # 登录策略：MULTI(多端在线) | SINGLE(单设备) | SAME_TYPE_KICK(同类型互踢)
+  # 登录策略：
+  # - MULTI: 多端共存（不限制）
+  # - SINGLE: 单设备（踢掉所有其他设备）
+  # - SAME_TYPE_KICK: 同端互踢（推荐，微信/支付宝方式）
   login-policy: SAME_TYPE_KICK
 
 # 日志配置

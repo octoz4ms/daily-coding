@@ -55,5 +55,10 @@ public class LoginResponse implements Serializable {
      * 角色列表
      */
     private List<String> roles;
+
+    /**
+     * 客户端类型
+     */
+    private String clientType;
 }
 

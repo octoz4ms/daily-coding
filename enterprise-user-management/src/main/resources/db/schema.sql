@@ -107,7 +107,8 @@ CREATE TABLE sys_login_log (
     id              BIGINT          NOT NULL            COMMENT '日志ID',
     user_id         BIGINT          DEFAULT NULL        COMMENT '用户ID',
     username        VARCHAR(32)     DEFAULT ''          COMMENT '用户名',
-    type            TINYINT         DEFAULT 1           COMMENT '类型 1-登录 2-登出',
+    type            TINYINT         DEFAULT 1           COMMENT '类型 1-登录 2-登出 3-被踢出',
+    client_type     VARCHAR(16)     DEFAULT ''          COMMENT '客户端类型 pc/mobile/tablet/mini',
     ip              VARCHAR(64)     DEFAULT ''          COMMENT '登录IP',
     location        VARCHAR(64)     DEFAULT ''          COMMENT '登录地点',
     browser         VARCHAR(64)     DEFAULT ''          COMMENT '浏览器',
@@ -118,6 +119,7 @@ CREATE TABLE sys_login_log (
     PRIMARY KEY (id),
     KEY idx_user_id (user_id),
     KEY idx_username (username),
+    KEY idx_client_type (client_type),
     KEY idx_login_time (login_time),
     KEY idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='登录日志表';
