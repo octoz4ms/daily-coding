@@ -74,3 +74,12 @@ public class SeckillConsumer {
 
 
 
+
+
+
+
+
+
+
+
+
