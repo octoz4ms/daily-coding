@@ -1,0 +1,9 @@
+# 开发环境配置 - 需配置真实商户信息后才能调用微信支付 API
+wechat:
+  pay:
+    app-id: your_app_id
+    mch-id: your_merchant_id
+    private-key-path: classpath:cert/apiclient_key.pem
+    merchant-serial-number: your_merchant_serial_number
+    api-v3-key: your_api_v3_key
+    notify-url: https://your-ngrok-url.ngrok.io/api/wechat/pay/notify

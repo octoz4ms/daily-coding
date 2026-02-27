@@ -1,0 +1,2 @@
+# 将 apiclient_key.pem 放在此目录
+# 或配置 wechat.pay.private-key-path 指向实际路径

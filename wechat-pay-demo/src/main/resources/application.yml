@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: wechat-pay-demo
+
+# 微信支付配置 - 请替换为实际商户信息
+wechat:
+  pay:
+    # 应用ID（公众号/小程序/APP）
+    app-id: ${WECHAT_APP_ID:your_app_id}
+    # 商户号
+    mch-id: ${WECHAT_MCH_ID:your_merchant_id}
+    # 商户 API 私钥路径（apiclient_key.pem）
+    private-key-path: ${WECHAT_PRIVATE_KEY_PATH:classpath:cert/apiclient_key.pem}
+    # 商户证书序列号
+    merchant-serial-number: ${WECHAT_MERCHANT_SERIAL:your_merchant_serial_number}
+    # APIv3 密钥（32位，用于回调解密）
+    api-v3-key: ${WECHAT_API_V3_KEY:your_api_v3_key}
+    # 支付结果通知 URL（需公网可访问）
+    notify-url: ${WECHAT_NOTIFY_URL:http://your-domain.com/api/wechat/pay/notify}
+
+# 支付订单配置
+payment:
+  order:
+    expire-minutes: 30  # 订单过期时间（分钟）
+
+logging:
+  level:
+    com.octo.wechatpay: DEBUG
+    com.wechat.pay: INFO
