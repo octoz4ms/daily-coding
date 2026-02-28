@@ -56,7 +56,9 @@ wechat:
 
 ## API 接口
 
-### 1. Native 下单
+### Native 支付
+
+#### 1. Native 下单
 
 ```bash
 POST /api/wechat/pay/native/prepay
@@ -81,19 +83,51 @@ Content-Type: application/json
 
 将 `codeUrl` 转为二维码，用户微信扫码即可支付。
 
-### 2. 查询订单
+#### 2. 查询订单
 
 ```bash
 GET /api/wechat/pay/order/{outTradeNo}
 ```
 
-### 3. 关闭订单
+#### 3. 关闭订单
 
 ```bash
 POST /api/wechat/pay/order/{outTradeNo}/close
 ```
 
-### 4. 支付回调（微信服务器调用）
+#### 4. 支付回调（微信服务器调用）
+
+### JSAPI 支付（微信内 H5）
+
+#### 1. 获取 wx.config 参数
+
+```bash
+GET /api/wechat/jsapi/config?url=当前页面完整URL
+```
+
+响应：`{ appId, timestamp, nonceStr, signature }`
+
+#### 2. JSAPI 下单
+
+```bash
+POST /api/wechat/pay/jsapi/prepay
+Content-Type: application/json
+
+{
+  "outTradeNo": "ORDER202402270001",
+  "description": "商品购买",
+  "totalAmount": 0.01,
+  "openid": "用户openid"
+}
+```
+
+响应：`{ timeStamp, nonceStr, package, signType, paySign }`（用于 wx.chooseWXPay）
+
+#### 3. 演示页面
+
+`http://localhost:8080/jsapi-pay.html`（需在微信内置浏览器中打开）
+
+### 支付回调（微信服务器调用）
 
 ```
 POST /api/wechat/pay/notify

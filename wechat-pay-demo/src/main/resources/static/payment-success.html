@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>支付成功</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; padding: 40px; text-align: center; }
+    .success { color: #07c160; font-size: 24px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="success">支付成功</div>
+  <p id="orderInfo"></p>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const order = params.get('order');
+    if (order) {
+      document.getElementById('orderInfo').textContent = '订单号：' + order;
+    }
+  </script>
+</body>
+</html>

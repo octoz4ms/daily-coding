@@ -20,6 +20,8 @@ wechat:
     api-v3-key: ${WECHAT_API_V3_KEY:your_api_v3_key}
     # 支付结果通知 URL（需公网可访问）
     notify-url: ${WECHAT_NOTIFY_URL:http://your-domain.com/api/wechat/pay/notify}
+    # 公众号 AppSecret（JSAPI 的 wx.config 需要）
+    app-secret: ${WECHAT_APP_SECRET:your_app_secret}
 
 # 支付订单配置
 payment:

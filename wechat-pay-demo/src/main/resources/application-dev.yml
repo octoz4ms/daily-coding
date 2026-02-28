@@ -7,3 +7,4 @@ wechat:
     merchant-serial-number: your_merchant_serial_number
     api-v3-key: your_api_v3_key
     notify-url: https://your-ngrok-url.ngrok.io/api/wechat/pay/notify
+    app-secret: your_app_secret

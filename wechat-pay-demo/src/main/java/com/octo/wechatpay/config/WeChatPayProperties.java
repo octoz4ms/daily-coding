@@ -41,4 +41,9 @@ public class WeChatPayProperties {
      * 支付结果通知 URL
      */
     private String notifyUrl;
+
+    /**
+     * 公众号 AppSecret（JSAPI 的 wx.config 签名需要，用于获取 jsapi_ticket）
+     */
+    private String appSecret;
 }

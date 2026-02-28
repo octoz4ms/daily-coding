@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSAPI 支付演示</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; padding: 20px; max-width: 400px; margin: 0 auto; }
+    button { padding: 12px 24px; font-size: 16px; background: #07c160; color: #fff; border: none; border-radius: 8px; width: 100%; cursor: pointer; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .tip { color: #888; font-size: 12px; margin-top: 20px; }
+    input { width: 100%; padding: 8px; margin: 8px 0; box-sizing: border-box; }
+    label { display: block; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h2>JSAPI 支付演示</h2>
+  <p class="tip">请在微信内置浏览器中打开此页面</p>
+
+  <label>订单号：</label>
+  <input type="text" id="orderId" value="ORDER" placeholder="商户订单号">
+
+  <label>金额（元）：</label>
+  <input type="number" id="amount" value="0.01" step="0.01" min="0.01">
+
+  <label>OpenID：</label>
+  <input type="text" id="openid" placeholder="用户 openid（需公众号授权获取）">
+
+  <button id="btn-pay" disabled>立即支付</button>
+
+  <p class="tip" id="status"></p>
+
+  <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+  <script>
+    const API_BASE = window.location.origin;
+
+    const statusEl = document.getElementById('status');
+    const btnPay = document.getElementById('btn-pay');
+
+    function setStatus(msg) {
+      statusEl.textContent = msg;
+    }
+
+    // 1. 页面加载时初始化 wx.config
+    async function initWxConfig() {
+      try {
+        const url = encodeURIComponent(location.href.split('#')[0]);
+        const res = await fetch(`${API_BASE}/api/wechat/jsapi/config?url=${url}`);
+        if (!res.ok) throw new Error('获取 config 失败: ' + res.status);
+        const config = await res.json();
+
+        wx.config({
+          debug: false,
+          appId: config.appId,
+          timestamp: config.timestamp,
+          nonceStr: config.nonceStr,
+          signature: config.signature,
+          jsApiList: ['chooseWXPay']
+        });
+
+        wx.ready(function() {
+          setStatus('支付已就绪');
+          btnPay.disabled = false;
+        });
+
+        wx.error(function(err) {
+          setStatus('支付初始化失败: ' + JSON.stringify(err));
+        });
+      } catch (e) {
+        setStatus('初始化失败: ' + e.message);
+      }
+    }
+
+    // 2. 调起支付
+    async function doPay() {
+      const orderId = document.getElementById('orderId').value || 'ORDER' + Date.now();
+      const amount = parseFloat(document.getElementById('amount').value) || 0.01;
+      const openid = document.getElementById('openid').value;
+
+      if (!openid) {
+        setStatus('请先填写 openid（需通过公众号网页授权获取）');
+        return;
+      }
+
+      btnPay.disabled = true;
+      setStatus('正在下单...');
+
+      try {
+        const res = await fetch(`${API_BASE}/api/wechat/pay/jsapi/prepay`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            outTradeNo: orderId,
+            description: 'JSAPI 支付演示',
+            totalAmount: amount,
+            openid: openid
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(err || '下单失败');
+        }
+
+        const payParams = await res.json();
+        setStatus('调起支付中...');
+
+        wx.chooseWXPay({
+          timestamp: payParams.timeStamp,
+          nonceStr: payParams.nonceStr,
+          package: payParams.package,
+          signType: payParams.signType,
+          paySign: payParams.paySign,
+          success: function() {
+            setStatus('支付成功！');
+            setTimeout(function() {
+              location.href = '/payment/success' + (orderId ? '?order=' + orderId : '');
+            }, 1500);
+          },
+          cancel: function() {
+            setStatus('用户取消支付');
+            btnPay.disabled = false;
+          },
+          fail: function(err) {
+            setStatus('支付失败: ' + (err.errMsg || ''));
+            btnPay.disabled = false;
+          }
+        });
+      } catch (e) {
+        setStatus('错误: ' + e.message);
+        btnPay.disabled = false;
+      }
+    }
+
+    initWxConfig();
+    document.getElementById('btn-pay').addEventListener('click', doPay);
+  </script>
+</body>
+</html>

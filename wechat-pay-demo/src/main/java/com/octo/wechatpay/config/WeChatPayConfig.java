@@ -4,6 +4,7 @@ import com.wechat.pay.java.core.Config;
 import com.wechat.pay.java.core.RSAAutoCertificateConfig;
 import com.wechat.pay.java.core.util.IOUtil;
 import com.wechat.pay.java.core.util.PemUtil;
+import com.wechat.pay.java.service.payments.jsapi.JsapiServiceExtension;
 import com.wechat.pay.java.service.payments.nativepay.NativePayService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -56,5 +57,10 @@ public class WeChatPayConfig {
     @Bean
     public NativePayService nativePayService(Config config) {
         return new NativePayService.Builder().config(config).build();
+    }
+
+    @Bean
+    public JsapiServiceExtension jsapiServiceExtension(Config config) {
+        return new JsapiServiceExtension.Builder().config(config).build();
     }
 }
