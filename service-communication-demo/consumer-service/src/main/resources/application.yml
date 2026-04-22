@@ -5,10 +5,14 @@ spring:
   application:
     name: consumer-service
 
-# 服务提供者地址配置
 provider:
   service:
-    url: http://localhost:8081
+    # 本地启动时使用 localhost；跨服务器部署时改成 http://目标服务器IP:8081 或网关地址
+    url: ${PROVIDER_SERVICE_URL:http://localhost:8081}
+
+deployment:
+  # local: 本地联调；remote: 跨服务器/跨环境部署
+  mode: ${DEPLOYMENT_MODE:local}
 
 # Feign 配置
 spring.cloud.openfeign:

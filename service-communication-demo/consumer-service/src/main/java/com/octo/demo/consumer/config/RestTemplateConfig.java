@@ -1,9 +1,11 @@
 package com.octo.demo.consumer.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  * RestTemplate 配置类
@@ -29,8 +31,20 @@ public class RestTemplateConfig {
         factory.setConnectTimeout(5000);
         // 读取超时：5秒
         factory.setReadTimeout(5000);
-        
+
         return new RestTemplate(factory);
+    }
+
+    /**
+     * 创建 WebClient Bean
+     * <p>
+     * 适合响应式和高并发场景，这里使用 baseUrl 便于演示跨服务调用
+     */
+    @Bean
+    public WebClient providerWebClient(@Value("${provider.service.url}") String providerServiceUrl) {
+        return WebClient.builder()
+                .baseUrl(providerServiceUrl)
+                .build();
     }
 }
 
