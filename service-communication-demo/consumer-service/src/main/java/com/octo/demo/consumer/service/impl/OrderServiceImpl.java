@@ -10,8 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -222,6 +221,44 @@ public class OrderServiceImpl implements OrderService {
         order.setCreateTime(LocalDateTime.now());
         orderStore.put(id, order);
         log.info("创建订单成功，ID: {}, 订单号: {}", id, order.getOrderNo());
+        return order;
+    }
+
+    @Override
+    public OrderDTO getOrderWithRestTemplateInPost(Long orderId) {
+        log.info("【RestTemplate】获取订单，ID: {}", orderId);
+        OrderDTO order = getOrderSnapshot(orderId);
+        if (order == null) {
+            return null;
+        }
+
+        try {
+            String url = providerServiceUrl + "/api/users";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            UserDTO userDTO = new UserDTO();
+            userDTO.setUsername("zms");
+            userDTO.setCreateTime(LocalDateTime.now());
+            userDTO.setPhone("15232215541");
+
+            HttpEntity<UserDTO> request = new HttpEntity<>(userDTO, headers);
+            ResponseEntity<Result<UserDTO>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    request,
+                    new ParameterizedTypeReference<>() {}
+            );
+
+            Result<UserDTO> result = response.getBody();
+            if (result != null && result.isSuccess() && result.getData() != null) {
+                order.setUser(result.getData());
+                log.info("【RestTemplate】成功获取用户信息: {}", result.getData().getUsername());
+            }
+        } catch (Exception e) {
+            log.error("【RestTemplate】调用用户服务失败: {}", e.getMessage());
+        }
         return order;
     }
 

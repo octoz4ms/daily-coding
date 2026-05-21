@@ -76,4 +76,15 @@ public class OrderController {
         log.info("创建订单: {}", order);
         return Result.success("创建成功", orderService.createOrder(order));
     }
+
+
+    @GetMapping("/rest/post/{id}")
+    public Result<OrderDTO> getOrderWithRestTemplateInPost(@PathVariable Long id) {
+        log.info("【RestTemplate方式,发送post请求】获取订单，ID: {}", id);
+        OrderDTO order = orderService.getOrderWithRestTemplateInPost(id);
+        if (order == null) {
+            return Result.fail(404, "订单不存在");
+        }
+        return Result.success(order);
+    }
 }

@@ -44,5 +44,7 @@ public interface OrderService {
      * 创建订单
      */
     OrderDTO createOrder(OrderDTO order);
+
+    OrderDTO getOrderWithRestTemplateInPost(Long id);
 }
 
