@@ -12,9 +12,9 @@ spring:
         namespace: public
       config:
         enabled: false
-#        server-addr: localhost:8848
-#        file-extension: yaml
-#        namespace: public
+        # server-addr: localhost:8848
+        # file-extension: yaml
+        # namespace: public
     # Gateway 路由配置
     gateway:
       discovery:
@@ -34,6 +34,13 @@ spring:
           uri: lb://order-service
           predicates:
             - Path=/api/order/**
+          filters:
+            - StripPrefix=1
+        # 商品服务路由
+        - id: product-service-route
+          uri: lb://product-service
+          predicates:
+            - Path=/api/product/**
           filters:
             - StripPrefix=1
 

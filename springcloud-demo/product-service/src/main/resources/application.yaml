@@ -1,11 +1,11 @@
 server:
-  port: 8082
+  port: 8083
 
 spring:
   application:
-    name: order-service
+    name: product-service
   cloud:
-    # Nacos 配置
+    # Nacos ??
     nacos:
       discovery:
         server-addr: 115.190.171.200:8848
@@ -15,7 +15,7 @@ spring:
         # server-addr: localhost:8848
         # file-extension: yaml
         # namespace: public
-    # Sentinel 配置
+    # Sentinel ??
     sentinel:
       transport:
         dashboard: localhost:8888
@@ -23,9 +23,9 @@ spring:
       eager: true
       web-context-unify: false
       feign:
-        enabled: true  # 开启 Feign 整合 Sentinel
+        enabled: true  # ?? Feign ?? Sentinel
 
-# OpenFeign 配置
+# OpenFeign ??
 openfeign:
   client:
     config:
@@ -33,7 +33,7 @@ openfeign:
         connect-timeout: 5000
         read-timeout: 5000
 
-# 日志配置
+# ????
 logging:
   level:
     com.example.order: DEBUG
