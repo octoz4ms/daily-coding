@@ -1,9 +1,9 @@
 package com.example.product.controller;
 
+import com.example.feign.client.UserFeignClient;
 import com.example.common.entity.Product;
 import com.example.common.entity.User;
 import com.example.common.result.Result;
-import com.example.product.feign.UserFeignClient;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

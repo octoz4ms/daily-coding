@@ -21,6 +21,12 @@
             <artifactId>common</artifactId>
         </dependency>
 
+        <!-- 公共 api 模块 -->
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>feign-core</artifactId>
+        </dependency>
+
         <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

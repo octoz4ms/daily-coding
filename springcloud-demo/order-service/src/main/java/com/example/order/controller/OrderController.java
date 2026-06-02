@@ -1,9 +1,9 @@
 package com.example.order.controller;
 
+import com.example.feign.client.UserFeignClient;
 import com.example.common.entity.Order;
 import com.example.common.entity.User;
 import com.example.common.result.Result;
-import com.example.order.feign.UserFeignClient;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 

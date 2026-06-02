@@ -7,6 +7,7 @@
     <groupId>com.example</groupId>
     <artifactId>springcloud-demo</artifactId>
     <version>1.0.0</version>
+
     <packaging>pom</packaging>
     <name>springcloud-demo</name>
     <description>Spring Cloud 微服务示例项目</description>
@@ -65,6 +66,13 @@
             <dependency>
                 <groupId>com.example</groupId>
                 <artifactId>common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- openfeign 通用模块 -->
+            <dependency>
+                <groupId>com.example</groupId>
+                <artifactId>feign-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

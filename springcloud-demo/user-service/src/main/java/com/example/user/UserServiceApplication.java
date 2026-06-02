@@ -9,7 +9,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * 用户服务启动类
  */
 @SpringBootApplication
-@EnableDiscoveryClient
 @EnableFeignClients
 public class UserServiceApplication {
 

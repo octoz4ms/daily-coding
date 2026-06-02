@@ -9,8 +9,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * 订单服务启动类
  */
 @SpringBootApplication
-@EnableDiscoveryClient
-@EnableFeignClients
+@EnableFeignClients(basePackages = {"com.example.api"})
 public class OrderServiceApplication {
 
     public static void main(String[] args) {

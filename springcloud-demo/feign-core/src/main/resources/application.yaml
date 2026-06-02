@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: feign-core
+
+  cloud:
+    openfeign:
+      # OkHttp 启用
+      okhttp:
+        enable: true
+
+      # 客户端配置
+      client:
+        config:
+          # 全局默认
+          default:
+            connectTimeout: 10000
+            readTimeout: 30000
+            loggerLevel: basic
+
+          # 特定服务覆盖
+          user-service:
+            connectTimeout: 5000
+            readTimeout: 5000
+
+      # 压缩配置
+      compression:
+        request:
+          enabled: true
+          mine-types: text/xml,application/xml,application/json
+          min-request-size: 2048
+        response:
+          enabled: true
+
+# 日志
+logging:
+  level:
+    com.example.feign: DEBUG
