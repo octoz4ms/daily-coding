@@ -15,6 +15,7 @@
     <!-- 子模块 -->
     <modules>
         <module>common</module>
+        <module>feign-core</module>
         <module>gateway</module>
         <module>user-service</module>
         <module>order-service</module>

@@ -22,10 +22,10 @@
         </dependency>
 
         <!-- 公共 api 模块 -->
-        <dependency>
-            <groupId>com.example</groupId>
-            <artifactId>feign-core</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.example</groupId>-->
+<!--            <artifactId>feign-core</artifactId>-->
+<!--        </dependency>-->
 
         <!-- Spring Boot Web -->
         <dependency>
