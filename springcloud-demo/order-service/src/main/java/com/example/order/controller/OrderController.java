@@ -1,9 +1,10 @@
 package com.example.order.controller;
 
-import com.example.feign.client.UserFeignClient;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.example.common.entity.Order;
 import com.example.common.entity.User;
 import com.example.common.result.Result;
+import com.example.order.service.UserRemoteService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,7 @@ import java.util.Map;
 public class OrderController {
 
     @Resource
-    private UserFeignClient userFeignClient;
+    private UserRemoteService userRemoteService;
 
     // 模拟数据库
     private static final Map<Long, Order> ORDER_MAP = new HashMap<>();
@@ -42,23 +43,48 @@ public class OrderController {
     }
 
     /**
-     * 获取订单及用户信息（演示服务间调用）
+     * 获取订单及用户信息（核心依赖：用户服务失败则阻断）
      */
     @GetMapping("/with-user/{id}")
+    @SentinelResource(value = "getOrderWithUser", blockHandler = "getOrderWithUserBlockHandler")
     public Result<Map<String, Object>> getOrderWithUser(@PathVariable(name = "id") Long id) {
         Order order = ORDER_MAP.get(id);
         if (order == null) {
             return Result.fail("订单不存在");
         }
 
-        // 通过 Feign 远程调用用户服务获取用户信息
-        Result<User> userResult = userFeignClient.getUserById(order.getUserId());
+        User user = userRemoteService.getUserStrict(order.getUserId());
 
         Map<String, Object> result = new HashMap<>();
         result.put("order", order);
-        result.put("user", userResult.getData());
+        result.put("user", user);
+        result.put("degraded", false);
 
         return Result.success(result);
+    }
+
+    /**
+     * 获取订单及用户信息（非核心依赖：用户服务失败则默认值兜底）
+     */
+    @GetMapping("/with-user-tolerant/{id}")
+    public Result<Map<String, Object>> getOrderWithUserTolerant(@PathVariable(name = "id") Long id) {
+        Order order = ORDER_MAP.get(id);
+        if (order == null) {
+            return Result.fail("订单不存在");
+        }
+
+        User user = userRemoteService.getUserWithDefault(order.getUserId());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("order", order);
+        result.put("user", user);
+        result.put("degraded", isDefaultUser(user));
+
+        return Result.success(result);
+    }
+
+    public Result<Map<String, Object>> getOrderWithUserBlockHandler(Long id, Throwable ex) {
+        return Result.fail(429, "当前访问过于频繁，请稍后重试");
     }
 
     /**
@@ -67,5 +93,9 @@ public class OrderController {
     @GetMapping("/list")
     public Result<Map<Long, Order>> listOrders() {
         return Result.success(ORDER_MAP);
+    }
+
+    private boolean isDefaultUser(User user) {
+        return user != null && user.getUsername() != null && user.getUsername().startsWith("default-user-");
     }
 }

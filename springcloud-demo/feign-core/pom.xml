@@ -32,6 +32,12 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
+        <!-- Sentinel OpenFeign 适配，支持 feign fallbackFactory 与流量治理统一接入 -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+        </dependency>
+
         <!-- OkHttp -->
         <dependency>
             <groupId>io.github.openfeign</groupId>

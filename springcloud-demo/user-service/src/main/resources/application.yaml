@@ -5,35 +5,21 @@ spring:
   application:
     name: user-service
   cloud:
-    # Nacos 配置
     nacos:
       discovery:
         server-addr: 115.190.171.200:8848
         namespace: public
       config:
         enabled: false
-        # server-addr: 115.190.171.200:8848
-        # file-extension: yaml
-        # namespace: public
-    # Sentinel 配置
     sentinel:
       transport:
-        dashboard: localhost:8888
+        dashboard: 115.190.171.200:8729
         port: 8719
       eager: true
       web-context-unify: false
       feign:
-        enabled: true  # 开启 Feign 整合 Sentinel
+        enabled: true
 
-# OpenFeign 配置
-openfeign:
-  client:
-    config:
-      default:
-        connect-timeout: 5000
-        read-timeout: 5000
-
-# 日志配置
 logging:
   level:
     com.example.user: DEBUG

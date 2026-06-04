@@ -2,16 +2,15 @@ package com.example.order;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
  * 订单服务启动类
  */
 @SpringBootApplication
 @EnableFeignClients(basePackages = {"com.example.feign"})
-@ComponentScan(basePackages = {"com.example.order", "com.example.feign", "com.example.user"})
+@EnableAsync
 public class OrderServiceApplication {
 
     public static void main(String[] args) {

@@ -5,24 +5,45 @@ spring:
   application:
     name: order-service
   cloud:
-    # OpenFeign 配置
-    openfeign:
-      client:
-        config:
-          default:
-            connect-timeout: 5000
-            read-timeout: 5000
-      circuitbreaker:
-        enabled: true
-    # Nacos 配置
     nacos:
       discovery:
         server-addr: 115.190.171.200:8848
         namespace: public
       config:
         enabled: false
+    openfeign:
+      okhttp:
+        enabled: true
+      circuitbreaker:
+        enabled: true
+      client:
+        config:
+          default:
+            connectTimeout: 1000
+            readTimeout: 3000
+            loggerLevel: basic
+          user-service:
+            connectTimeout: 1000
+            readTimeout: 2000
+      compression:
+        request:
+          enabled: true
+          mime-types:
+            - text/xml
+            - application/xml
+            - application/json
+          min-request-size: 2048
+        response:
+          enabled: true
+    sentinel:
+      transport:
+        dashboard: 115.190.171.200:8729
+      eager: true
+      web-context-unify: true
+      feign:
+        enabled: true
 
-# 日志配置
 logging:
   level:
-    com.example.order: DEBUG
+    com.example.order: INFO
+    com.example.feign: INFO
