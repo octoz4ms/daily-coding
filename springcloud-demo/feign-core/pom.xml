@@ -11,40 +11,29 @@
 
     <artifactId>feign-core</artifactId>
     <name>feign-core</name>
-    <description>openfeign 通用模块</description>
+    <description>OpenFeign 公共契约与默认配置模块</description>
 
     <dependencies>
-        <!-- 公共模块 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>common</artifactId>
         </dependency>
 
-        <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- OpenFeign -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
-        <!-- Sentinel OpenFeign 适配，支持 feign fallbackFactory 与流量治理统一接入 -->
-        <dependency>
-            <groupId>com.alibaba.cloud</groupId>
-            <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
-        </dependency>
-
-        <!-- OkHttp -->
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-okhttp</artifactId>
         </dependency>
 
-        <!-- OkHttp -->
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>

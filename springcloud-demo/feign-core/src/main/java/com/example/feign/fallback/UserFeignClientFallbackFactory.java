@@ -1,6 +1,5 @@
 package com.example.feign.fallback;
 
-import com.example.common.entity.User;
 import com.example.common.result.Result;
 import com.example.feign.client.UserFeignClient;
 import lombok.extern.slf4j.Slf4j;

@@ -12,6 +12,11 @@ public class GlobalExceptionHandler {
         return Result.fail(ex.getCode(), ex.getMessage());
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Result<Void> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return Result.fail(404, ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public Result<Void> handleException(Exception ex) {
         return Result.fail(500, "系统繁忙，请稍后重试");

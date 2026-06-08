@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class UserRemoteService {
 
+    private static final String DEFAULT_USER_PREFIX = "default-user-";
+
     @Resource
     private UserFeignClient userFeignClient;
 
@@ -40,11 +42,15 @@ public class UserRemoteService {
         return buildDefaultUser(userId);
     }
 
+    public boolean isDefaultUser(User user) {
+        return user != null && user.getUsername() != null && user.getUsername().startsWith(DEFAULT_USER_PREFIX);
+    }
+
     private boolean isSuccess(Result<?> result) {
         return result != null && Integer.valueOf(200).equals(result.getCode());
     }
 
     private User buildDefaultUser(Long userId) {
-        return new User(userId, "default-user-" + userId, "unknown@example.com", "N/A");
+        return new User(userId, DEFAULT_USER_PREFIX + userId, "unknown@example.com", "N/A");
     }
 }

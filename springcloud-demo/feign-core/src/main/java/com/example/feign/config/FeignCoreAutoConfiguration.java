@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import java.util.concurrent.TimeUnit;
 
 @AutoConfiguration
+@ConditionalOnClass(Logger.class)
 public class FeignCoreAutoConfiguration {
 
     @Bean
@@ -21,7 +22,7 @@ public class FeignCoreAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(UserFeignClientFallbackFactory.class)
     public UserFeignClientFallbackFactory userFeignClientFallbackFactory() {
         return new UserFeignClientFallbackFactory();
     }
