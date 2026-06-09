@@ -2,47 +2,69 @@ package com.example.order.service;
 
 import com.example.common.entity.Order;
 import com.example.common.entity.User;
+import com.example.common.result.Result;
+import com.example.feign.client.UserFeignClient;
+import com.example.order.dto.OrderCreateRequest;
 import com.example.order.dto.OrderDetailResponse;
+import com.example.order.exception.BusinessException;
 import com.example.order.repository.OrderRepository;
-import jakarta.annotation.Resource;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class OrderService {
 
-    @Resource
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
+    private final UserFeignClient userFeignClient;
 
-    @Resource
-    private UserRemoteService userRemoteService;
+    public OrderDetailResponse getOrderDetail(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BusinessException("订单不存在"));
 
-    public Order getOrderById(Long id) {
-        return orderRepository.findById(id);
-    }
+        OrderDetailResponse response = OrderDetailResponse.from(order);
 
-    public Map<Long, Order> listOrders() {
-        return orderRepository.findAll();
-    }
-
-    public OrderDetailResponse getOrderWithUserStrict(Long id) {
-        Order order = requireOrder(id);
-        User user = userRemoteService.getUserStrict(order.getUserId());
-        return new OrderDetailResponse(order, user, false);
-    }
-
-    public OrderDetailResponse getOrderWithUserTolerant(Long id) {
-        Order order = requireOrder(id);
-        User user = userRemoteService.getUserWithDefault(order.getUserId());
-        return new OrderDetailResponse(order, user, userRemoteService.isDefaultUser(user));
-    }
-
-    private Order requireOrder(Long id) {
-        Order order = orderRepository.findById(id);
-        if (order == null) {
-            throw new IllegalArgumentException("订单不存在");
+        User user = fetchUser(order.getUserId());
+        if (user == null) {
+            throw new BusinessException("无法获取用户信息，订单详情暂不可用");
         }
-        return order;
+        response.setUser(user);
+
+        return response;
+    }
+
+    public OrderDetailResponse createOrder(OrderCreateRequest request) {
+        User user = fetchUser(request.getUserId());
+        if (user == null) {
+            throw new BusinessException("用户不存在，下单失败");
+        }
+
+        Order order = new Order();
+        order.setUserId(request.getUserId());
+        order.setProductName(request.getProductName());
+        order.setAmount(request.getAmount());
+        order.setOrderNo("ORD" + System.currentTimeMillis());
+
+        Order saved = orderRepository.save(order);
+
+        OrderDetailResponse response = OrderDetailResponse.from(saved);
+        response.setUser(user);
+        return response;
+    }
+
+    private User fetchUser(Long userId) {
+        Result<User> result = userFeignClient.getUserById(userId);
+        if (result == null) {
+            log.warn("[OrderService] 用户服务响应为空, userId={}", userId);
+            return null;
+        }
+        if (result.getCode() == null || result.getCode() != 200) {
+            log.warn("[OrderService] 用户服务返回业务错误, code={}, message={}, userId={}",
+                    result.getCode(), result.getMessage(), userId);
+            return null;
+        }
+        return result.getData();
     }
 }
