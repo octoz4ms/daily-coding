@@ -13,8 +13,8 @@ spring:
         enabled: false
     sentinel:
       transport:
-        dashboard: 115.190.171.200:8729
-        port: 8719
+        dashboard: 127.0.0.1:8729
+        port: 8721
       eager: true
       web-context-unify: false
       feign:
