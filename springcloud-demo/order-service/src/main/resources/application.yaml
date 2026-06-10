@@ -46,4 +46,4 @@ spring:
 logging:
   level:
     com.example.order: INFO
-    com.example.feign: INFO
+    com.example.feign.client.UserFeignClient: DEBUG
