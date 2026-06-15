@@ -28,6 +28,14 @@ public class OrderController {
         return Result.success(detail);
     }
 
+
+    @GetMapping("/check")
+    @SentinelResource(value = "order:check", blockHandler = "handleGetOrderDetailBlock", fallback = "handleGetOrderDetailFallback")
+    public Result<Object> getOrderCheck(@PathVariable("id") Long id) {
+        log.info("查询订单详情, orderId={}", id);
+        return Result.success(null);
+    }
+
     @PostMapping
     @SentinelResource(value = "order:createOrder", blockHandler = "handleCreateOrderBlock", fallback = "handleCreateOrderFallback")
     public Result<OrderDetailResponse> createOrder(@Valid @RequestBody OrderCreateRequest request) {

@@ -1,3 +1,7 @@
+feign:
+  sentinel:
+    enabled: true
+
 server:
   port: 8082
 
@@ -12,6 +16,8 @@ spring:
       config:
         enabled: false
     openfeign:
+      sentinel:
+        enabled: true
       okhttp:
         enabled: true
       circuitbreaker:
@@ -38,11 +44,9 @@ spring:
     sentinel:
       transport:
         dashboard: 127.0.0.1:8729
-        port: 8724
+        port: 8722
       eager: true
       web-context-unify: false
-      feign:
-        enabled: true
 
 logging:
   level:

@@ -27,9 +27,9 @@ public class OrderService {
         OrderDetailResponse response = OrderDetailResponse.from(order);
 
         User user = fetchUser(order.getUserId());
-        if (user == null) {
-            throw new BusinessException("无法获取用户信息，订单详情暂不可用");
-        }
+//        if (user == null) {
+//            throw new BusinessException("无法获取用户信息，订单详情暂不可用");
+//        }
         response.setUser(user);
 
         return response;

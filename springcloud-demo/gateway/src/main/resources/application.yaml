@@ -1,5 +1,5 @@
 server:
-  port: 8089
+  port: 8080
 
 spring:
   application:
@@ -47,8 +47,8 @@ spring:
     # Sentinel 配置
     sentinel:
       transport:
-        dashboard: localhost:8888
-        port: 8719
+        dashboard: localhost:8729
+        port: 8720
       eager: true
 
 # 日志配置

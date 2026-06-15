@@ -17,8 +17,6 @@ spring:
         port: 8721
       eager: true
       web-context-unify: false
-      feign:
-        enabled: true
 
 logging:
   level:
